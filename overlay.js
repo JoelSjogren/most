@@ -1,9 +1,6 @@
 /*  MoST Subtitle Player :: Implementation Overview
 
-Code is inserted into the target web page.
-    * The current video can be determined
-    * Syncing is possible
-    * Communication with the inserted code is a bit complicated
+Code is inserted into the target web page, making syncing possible.
 
 Subtitles are downloaded via DownSub (but we could have used the api).
 
@@ -104,7 +101,7 @@ $(document).ready(function () {
         timer = true;
         
         // To be run many times per second.
-        function update() {
+        function updateRepeatedly() {
             var period = 50;  // sleep time between updates
             
             // Get the local playback time (in milliseconds, starting at 0).
@@ -124,11 +121,11 @@ $(document).ready(function () {
             
             // Reschedule, creating an infinite loop.
             if (timer) {
-                timer = window.setTimeout(update, period);
+                timer = window.setTimeout(updateRepeatedly, period);
             }
         };
         
-        update();
+        updateRepeatedly();
     }
     
     function stopPlayback() {
@@ -162,7 +159,7 @@ $(document).ready(function () {
             pages.push({'loc0': strToMs(loc0), 'loc1': strToMs(loc1), 's': e});
         }
         
-        show("Loaded " + (i+1) + " pages.", 2000, "info");
+        show("Loaded " + i + " pages.", 2000, "info");
     }
 
     // Show text, typically a subtitle page.
