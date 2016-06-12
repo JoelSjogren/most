@@ -13,6 +13,16 @@ A transparent overlay is created using as a div using zepto; see addOverlay.
 
 // Tip: Use the 'debugger' command to insert a breakpoint!
 
+/*  Developer's notes (strange workarounds needed)
+
+In order to access the global variable 'player' at Viki, the 'Elements' tab
+must be active in Chrome's 'Developer Tools'.
+
+In order to download subtitles from DownSub, which uses http and not https,
+the user must replace Viki's 'https' by 'http' in the address bar.
+
+*/
+
 $(document).ready(function () {
 
     // The decoded srt file is organized into pages.
@@ -38,7 +48,7 @@ $(document).ready(function () {
         syncForever();
     }
 
-    function init(request, sender, callback) {
+    function init(currentURL, sender, callback) {
         // Inject the ugly hack into the web page.
         var script = document.createElement('script');
         script.appendChild(document.createTextNode(
@@ -47,7 +57,7 @@ $(document).ready(function () {
             .appendChild(script);
 
         addOverlay();
-        downloadSubtitles();
+        downloadSubtitles(currentURL);
         startPlayback();
     }
 
@@ -104,10 +114,11 @@ $(document).ready(function () {
             // Write current subtitle page to screen.
             for (var i = 0; i < pages.length; i++) {  // TODO binary search?
                 var page = pages[i];
-                // the " - period" here is just for fine tuning
-                if (page['loc0'] - period <= local && local <= page['loc1']
+                // the " + period" here is just for fine tuning, not optimal
+                if (page['loc0'] <= local + period
+                        && local + period <= page['loc1']
                         && current != i) {
-                    show(page['s'], page['loc1']-page['loc0'], i);
+                    show(page['s'], page['loc1']-local, i);
                 }
             }
             
@@ -182,9 +193,17 @@ $(document).ready(function () {
         $(".uid_" + uid).remove();
     }
 
-    function downloadSubtitles() {
-        // Open the local demo file for now.
-        // TODO: Download it from DownSub.
+    function downloadSubtitles(currentURL) {
+        // Download the corresponding Korean subtitles from Viki via DownSub.
+        var id = currentURL.split("viki.com/videos/")[1];
+        var subtitleURL = 'http://downsub.com/index.php?title=' + id +
+            "&url=http%3A%2F%2Fviki.com%2Fko";
+        $.get(subtitleURL, function(response) {
+            parseSubtitles(response);
+        });
+        
+        // (You can load a local file instead with this code block.)    
+        /*
         var xhttp = new XMLHttpRequest();
         xhttp.open("GET", chrome.runtime.getURL("demo2.srt"), true);
         xhttp.onreadystatechange = function ()
@@ -194,7 +213,7 @@ $(document).ready(function () {
                 parseSubtitles(xhttp.responseText);
             }
         };
-        xhttp.send();
+        xhttp.send();*/
     }
 
 });
