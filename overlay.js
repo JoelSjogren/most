@@ -22,12 +22,10 @@ $(document).ready(function () {
     // Text is continuously written as html to a single element.
     var overlay;
     var timer;
-    
-    // The unix time minus local playback time (in milliseconds, as always).
-    var sync;
 
     // Ugly hack independent of this scope (only its string will be injected).
     function specialCode () {
+        // Will hold the unix time minus local playback time (in milliseconds).
         $("body").append("<div id='most_sync'></div>");
       
         function syncForever() {
@@ -50,8 +48,6 @@ $(document).ready(function () {
 
         addOverlay();
         downloadSubtitles();
-        sync = new Date().getTime();  // TODO get this from the video player.
-        sync -= 17000;  // temporary; remove this
         startPlayback();
     }
 
@@ -99,8 +95,9 @@ $(document).ready(function () {
         
         // To be run many times per second.
         function update() {
-            var period = 50;
-            //var local = new Date().getTime() - sync;  // = 0 at the beginning.
+            var period = 50;  // sleep time between updates
+            
+            // Get the local playback time (in milliseconds, starting at 0).
             var syncEl = document.getElementById("most_sync");
             var local = new Date().getTime() - parseInt(syncEl.innerHTML);
             
@@ -111,12 +108,11 @@ $(document).ready(function () {
                 if (page['loc0'] - period <= local && local <= page['loc1']
                         && current != i) {
                     show(page['s'], page['loc1']-page['loc0'], i);
-                    //debugger;
                 }
             }
             
-            // Reschedule.
-            if (timer) {  // Compensate for sleep inaccuracy. TODO stabilize?
+            // Reschedule, creating an infinite loop.
+            if (timer) {
                 timer = window.setTimeout(update, period);
             }
         };
@@ -141,7 +137,6 @@ $(document).ready(function () {
     function parseSubtitles(srt) {
         pages = [];
 
-        //debugger;
         var srt2 = srt.replace(/\r\n|\r|\n/g, '\n')  // Normalize newlines.
                       .trim(srt)
                       .split('\n\n');
@@ -196,8 +191,6 @@ $(document).ready(function () {
         {
             if(xhttp.readyState == XMLHttpRequest.DONE && xhttp.status == 200)
             {
-                //... The content has been read in xhttp.responseText
-                //debugger;
                 parseSubtitles(xhttp.responseText);
             }
         };
