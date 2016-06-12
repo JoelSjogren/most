@@ -10,6 +10,7 @@ Subtitles are downloaded via DownSub (but we could have used the api).
 A transparent overlay is created using the following lines:
     var overlay = $("<div></div>");
     $("body").append(overlay);
+    overlay.css(...);
 
 */
 
@@ -24,10 +25,12 @@ $(document).ready(function () {
     // Text is continuously written as html to a single element.
     var overlay;
     var timer;
+    
+    // The unix time minus local playback time (in milliseconds, as always).
+    var sync;
 
     // Ugly hack independent of this scope (only its string will be injected).
     function specialcode () {
-        //console.log("log message 595");
         //console.log(player.getCurrentTime());
         //player.playVideo();
       
@@ -49,6 +52,8 @@ $(document).ready(function () {
 
         addOverlay();
         downloadSubtitles();
+        sync = new Date().getTime();  // TODO get this from the video player.
+        sync -= 17000;  // temporary; remove this
         startPlayback();
     }
 
@@ -56,7 +61,7 @@ $(document).ready(function () {
 
     function addOverlay() {
         if (!overlay) {
-            overlay = $("<div></div>");
+            overlay = $("<div id='most_overlay'></div>");
             $("body").append(overlay);
         }
         
@@ -66,48 +71,60 @@ $(document).ready(function () {
                               : {'width': 600, 'left': 20, 'bottom': 20};
         
         // Configure the looks and position.
+        shadow = "0 0 black";  // text shadow
+        for (var i=-1; i<=1; i++) for (var j=-1; j<=1; j++)
+            shadow = i + "px " + j + "px rgba(0, 0, 0, 1), " + shadow;
+        for (var i=-2; i<=2; i++) for (var j=-2; j<=2; j++)
+            shadow = i + "px " + j + "px rgba(0, 0, 0, 0.4), " + shadow;
+        for (var i=-3; i<=3; i++) for (var j=-3; j<=3; j++)
+            shadow = i + "px " + j + "px rgba(0, 0, 0, 0.1), " + shadow;
+            
         overlay.css({
-            top: "0px", left: "0px",
             position: "fixed",
             width: videoRect.width + "px",
             height: "200px",
             left: videoRect.left,
             top: videoRect.bottom,
-            background: "#b50",
-            opacity: "0.8",
+            background: "#0000",
+            //opacity: "0.2",
             zIndex: "99999999",
-            pointerEvents: "none"
+            pointerEvents: "none",
+            fontSize: "24px",
+            textAlign: "center",
+            color: "#fff",
+            textShadow: shadow
         });
     }
 
 
     function startPlayback() {
-        var start = new Date().getTime();
-        var local = 0;
-        var period = 50;
-
+        timer = true;
+        
         // To be run many times per second.
-        function step() {
-            local += period;
-
-            // Reschedule.
-            if (timer) {  // Compensate for sleep inaccuracy. TODO stabilize?
-                timer = window.setTimeout(step,
-                    period + start + local - new Date().getTime());
-            }
-
+        function update() {
+            var local = new Date().getTime() - sync;  // = 0 at the beginning.
+            
             // Write current subtitle page to screen.
             for (var i = 0; i < pages.length; i++) {  // TODO binary search?
                 var page = pages[i];
                 if (page['loc0'] <= local && local <= page['loc1']
                         && current != i) {
-                    show(page['s'], page['loc1']-page['loc0']-period, i);
+                    show(page['s'], page['loc1']-page['loc0'], i);
                     //debugger;
                 }
             }
-        }
-
-        timer = window.setTimeout(step, period);
+            
+            // Reschedule.
+            if (timer) {  // Compensate for sleep inaccuracy. TODO stabilize?
+                timer = window.setTimeout(update, 50);
+            }
+        };
+        
+        update();
+    }
+    
+    function stopPlayback() {
+        timer = false;
     }
 
     // Convert an srt time string to integer.
@@ -143,14 +160,25 @@ $(document).ready(function () {
 
     // Show text, typically a subtitle page.
     function show(text, duration, uid) {
+        // Remove old text. (This is an exceptional case.)
+        if (current !== undefined) {
+            hide(current);
+        }
+    
         // Write the text to screen.
-        overlay.append("<div class='uid_" + uid + "'>" + text + "</div>");
+        textEl = $("<div class='uid_" + uid + "'>" + text + "</div>");
+        overlay.append(textEl);
         
         // Don't rewrite it a lot.
         current = uid;
         
         // Remember to remove it after a while.
-        window.setTimeout(function () { hide(uid); }, duration);
+        window.setTimeout(function () {
+            if (current === uid) {
+                hide(uid);
+                current = undefined;
+            }
+        }, duration);
     }
 
     // Hide text. Inverse of 'show'.
