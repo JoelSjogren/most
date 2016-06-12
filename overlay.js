@@ -7,10 +7,7 @@ Code is inserted into the target web page.
 
 Subtitles are downloaded via DownSub (but we could have used the api).
 
-A transparent overlay is created using the following lines:
-    var overlay = $("<div></div>");
-    $("body").append(overlay);
-    overlay.css(...);
+A transparent overlay is created using as a div using zepto; see addOverlay.
 
 */
 
@@ -30,23 +27,24 @@ $(document).ready(function () {
     var sync;
 
     // Ugly hack independent of this scope (only its string will be injected).
-    function specialcode () {
-        //console.log(player.getCurrentTime());
-        //player.playVideo();
+    function specialCode () {
+        $("body").append("<div id='most_sync'></div>");
       
-        function sync() {
-            // TODO export player.getCurrentTime() - new Date().getTime();
-            window.setTimeout(sync, 100);
+        function syncForever() {
+            var local = Math.round(player.getCurrentTime() * 1000);
+            var syncVal = new Date().getTime() - local;
+            document.getElementById("most_sync").innerHTML = syncVal;
+            window.setTimeout(syncForever, 100);
         };
       
-        window.setTimeout(sync, 100);
+        syncForever();
     }
 
     function init(request, sender, callback) {
         // Inject the ugly hack into the web page.
         var script = document.createElement('script');
         script.appendChild(document.createTextNode(
-            '('+ specialcode +')();'));
+            '('+ specialCode +')();'));
         (document.body || document.head || document.documentElement)
             .appendChild(script);
 
@@ -71,7 +69,7 @@ $(document).ready(function () {
                               : {'width': 600, 'left': 20, 'bottom': 20};
         
         // Configure the looks and position.
-        shadow = "0 0 black";  // text shadow
+        shadow = "0 0 black";  // transparent text shadow:
         for (var i=-1; i<=1; i++) for (var j=-1; j<=1; j++)
             shadow = i + "px " + j + "px rgba(0, 0, 0, 1), " + shadow;
         for (var i=-2; i<=2; i++) for (var j=-2; j<=2; j++)
@@ -86,7 +84,6 @@ $(document).ready(function () {
             left: videoRect.left,
             top: videoRect.bottom,
             background: "#0000",
-            //opacity: "0.2",
             zIndex: "99999999",
             pointerEvents: "none",
             fontSize: "24px",
@@ -102,12 +99,16 @@ $(document).ready(function () {
         
         // To be run many times per second.
         function update() {
-            var local = new Date().getTime() - sync;  // = 0 at the beginning.
+            var period = 50;
+            //var local = new Date().getTime() - sync;  // = 0 at the beginning.
+            var syncEl = document.getElementById("most_sync");
+            var local = new Date().getTime() - parseInt(syncEl.innerHTML);
             
             // Write current subtitle page to screen.
             for (var i = 0; i < pages.length; i++) {  // TODO binary search?
                 var page = pages[i];
-                if (page['loc0'] <= local && local <= page['loc1']
+                // the " - period" here is just for fine tuning
+                if (page['loc0'] - period <= local && local <= page['loc1']
                         && current != i) {
                     show(page['s'], page['loc1']-page['loc0'], i);
                     //debugger;
@@ -116,7 +117,7 @@ $(document).ready(function () {
             
             // Reschedule.
             if (timer) {  // Compensate for sleep inaccuracy. TODO stabilize?
-                timer = window.setTimeout(update, 50);
+                timer = window.setTimeout(update, period);
             }
         };
         
