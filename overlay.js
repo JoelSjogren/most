@@ -47,11 +47,15 @@ $(document).ready(function () {
         // Determine how the target player will tell its current position
         // (in seconds).
         var getCurrentTime = function() {
+            // look for the regular player, subtitle editor (flash or html5)
             if ("player" in window) {
                 return player.getCurrentTime();
             }
             if ("subber_player_flash_api" in window) {
                 return subber_player_flash_api.player.currentTime();
+            }
+            if ("subber_player" in window) {
+                return subber_player.player.currentTime();
             }
         }
         
@@ -219,7 +223,7 @@ $(document).ready(function () {
         
         // Make a request to DownSub.
         var subtitleURL = 'http://downsub.com/index.php?title=' + id +
-            "&url=http%3A%2F%2Fviki.com%2Fko";
+            '&url=http%3A%2F%2Fviki.com%2Fko';
         $.get(subtitleURL, function(response) {
             parseSubtitles(response);
         });
