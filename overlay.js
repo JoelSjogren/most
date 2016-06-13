@@ -34,9 +34,21 @@ $(document).ready(function () {
     function specialCode () {
         // Will hold the unix time minus local playback time (in milliseconds).
         $("body").append("<div id='most_sync'></div>");
-      
+        
+        // Determine how the target player will tell its current position
+        // (in seconds).
+        var getCurrentTime = function() {
+            if ("player" in window) {
+                return player.getCurrentTime();
+            }
+            if ("subber_player_flash_api" in window) {
+                return subber_player_flash_api.player.currentTime();
+            }
+        }
+        
+        // Export this position continuously in html format (using the DOM).
         function syncForever() {
-            var local = Math.round(player.getCurrentTime() * 1000);
+            var local = Math.round(getCurrentTime() * 1000);
             var syncVal = new Date().getTime() - local;
             document.getElementById("most_sync").innerHTML = syncVal;
             window.setTimeout(syncForever, 100);
@@ -67,7 +79,8 @@ $(document).ready(function () {
         }
         
         // Find the positioning of the video player, or use (bad) defaults.
-        var video = $("#flashObject")[0];
+        var video = $("#flashObject")[0];  // try the default player
+        if (!video) video = $("#subber_player")[0];  // try the subtitle editor
         var videoRect = video ? video.getBoundingClientRect()
                               : {'width': 600, 'left': 20, 'bottom': 20};
         
@@ -190,9 +203,19 @@ $(document).ready(function () {
         $(".uid_" + uid).remove();
     }
 
+    // Download the corresponding Korean subtitles from Viki via DownSub.
     function downloadSubtitles(currentURL) {
-        // Download the corresponding Korean subtitles from Viki via DownSub.
-        var id = currentURL.split("viki.com/videos/")[1];
+        // Extract the video id based on the current url.
+        var known = ["viki.com/videos/", "subber.viki.com/translations/"];
+        var id;
+        for (var i = 0; i < known.length; i++) {
+            if (currentURL.indexOf(known[i]) != -1) {
+                id = currentURL.split(known[i])[1];
+            }
+        }
+        id = id.split("?")[0];
+        
+        // Make a request to DownSub.
         var subtitleURL = 'http://downsub.com/index.php?title=' + id +
             "&url=http%3A%2F%2Fviki.com%2Fko";
         $.get(subtitleURL, function(response) {
