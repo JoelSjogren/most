@@ -29,6 +29,15 @@ $(document).ready(function () {
     // Text is continuously written as html to a single element.
     var overlay;
     var timer;
+    
+    function init(currentURL, sender, callback) {
+        startSync();
+        addOverlay();
+        downloadSubtitles(currentURL);
+        startPlayback();
+    }
+
+    chrome.extension.onMessage.addListener(init);
 
     // Ugly hack independent of this scope (only its string will be injected).
     function specialCode () {
@@ -56,21 +65,15 @@ $(document).ready(function () {
       
         syncForever();
     }
-
-    function init(currentURL, sender, callback) {
+    
+    function startSync() {
         // Inject the ugly hack into the web page.
         var script = document.createElement('script');
         script.appendChild(document.createTextNode(
             '('+ specialCode +')();'));
         (document.body || document.head || document.documentElement)
             .appendChild(script);
-
-        addOverlay();
-        downloadSubtitles(currentURL);
-        startPlayback();
     }
-
-    chrome.extension.onMessage.addListener(init);
 
     function addOverlay() {
         if (!overlay) {
@@ -79,8 +82,7 @@ $(document).ready(function () {
         }
         
         // Find the positioning of the video player, or use (bad) defaults.
-        var video = $("#flashObject")[0];  // try the default player
-        if (!video) video = $("#subber_player")[0];  // try the subtitle editor
+        var video = $("#flashObject")[0] || $("#subber_player")[0];
         var videoRect = video ? video.getBoundingClientRect()
                               : {'width': 600, 'left': 20, 'bottom': 20};
         
