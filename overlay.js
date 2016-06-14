@@ -175,6 +175,17 @@ $(document).ready(function () {
             [b, c] = [a.slice(0, a.indexOf("\n")), a.slice(a.indexOf("\n")+1)];
             [d, e] = [c.slice(0, c.indexOf("\n")), c.slice(c.indexOf("\n")+1)];
             [loc0, loc1] = d.split(" --> ");
+            
+            // The following line improves security but comes at the cost of
+            // not supporting arbitrary html markup.
+            e = e.replace(/<\/?[^>]+(>|$)/g, function(part) {
+                var accept = ['<i>', '</i>', '<br>', '</br>', '<b>', '</b>'];
+                for (var i = 0; i < accept.length; i++) {
+                    if (part === accept[i]) return part;
+                }
+                return "";
+            });
+            
             pages.push({'loc0': strToMs(loc0), 'loc1': strToMs(loc1), 's': e});
         }
         
