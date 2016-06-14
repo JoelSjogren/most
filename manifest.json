@@ -21,6 +21,5 @@
       "js": ["zepto.js", "overlay.js"],
       "run_at": "document_end"
     }
-  ],
-  "web_accessible_resources": ["demo.srt", "demo2.srt"]
+  ]
 }
