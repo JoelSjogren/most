@@ -4,19 +4,16 @@ Code is inserted into the target web page, making syncing possible.
 
 Subtitles are downloaded via DownSub (but we could have used the api).
 
-A transparent overlay is created using as a div using zepto; see addOverlay.
+A transparent overlay is created using as a div using Zepto; see addOverlay.
 
 */
 
 // Tip: Use the 'debugger' command to insert a breakpoint!
 
-/*  Developer's notes (strange workarounds needed)
+/*  Developer's notes (strange behavior)
 
-In order to access the global variable 'player' at Viki, the 'Elements' tab
-must be active in Chrome's 'Developer Tools'.
-
-In order to download subtitles from DownSub, which uses http and not https,
-the user must replace Viki's 'https' by 'http' in the address bar.
+In order to access the global variable 'player' at Viki when debugging using
+Chrome's Developer Tools, the 'Elements' tab must be active.
 
 */
 
