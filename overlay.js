@@ -30,10 +30,10 @@ $(document).ready(function () {
     var overlay;
     var timer;
     
-    function init(currentURL, sender, callback) {
+    function init(srt, sender, callback) {
         startSync();
         addOverlay();
-        downloadSubtitles(currentURL);
+        parseSubtitles(srt);
         startPlayback();
     }
 
@@ -209,47 +209,7 @@ $(document).ready(function () {
         $(".uid_" + uid).remove();
     }
 
-    // Download the corresponding Korean subtitles from Viki via DownSub.
-    function downloadSubtitles(currentURL) {
-        // Extract the video id based on the current url.
-        var known = ["viki.com/videos/", "subber.viki.com/translations/",
-            "subber.viki.com/subtitlers/"];
-        var id;
-        for (var i = 0; i < known.length; i++) {
-            if (currentURL.indexOf(known[i]) != -1) {
-                id = currentURL.split(known[i])[1];
-            }
-        }
-        id = id.split("?")[0];
-        
-        // Make a request to DownSub.
-        var subtitleURL = 'http://downsub.com/index.php?title=' + id +
-            "&url=http%3A%2F%2Fviki.com%2Fko";  // <--Korean subtitles
-            //"&url=http%3A%2F%2Fviki.com%2Fen";  // <-- English subtitles
-        $.get(subtitleURL, function(response) {
-            parseSubtitles(response);
-        });
-        
-        // (You can load a local file instead with this code block.)    
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", chrome.runtime.getURL("demo2.srt"), true);
-        xhttp.onreadystatechange = function ()
-        {
-            if(xhttp.readyState == XMLHttpRequest.DONE && xhttp.status == 200)
-            {
-                parseSubtitles(xhttp.responseText);
-            }
-        };
-        xhttp.send();*/
-    }
-
 });
-
-
-
-
-
 
 
 
