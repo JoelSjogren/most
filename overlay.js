@@ -4,7 +4,7 @@ Code is inserted into the target web page, making syncing possible.
 
 Subtitles are downloaded via DownSub (but we could have used the api).
 
-A transparent overlay is created using as a div using Zepto; see addOverlay.
+A transparent overlay is created as a div using Zepto; see addOverlay.
 
 */
 

@@ -21,7 +21,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
             }
         };
         var subtitleURL = 'http://downsub.com/index.php?title=' + id +
-            "&url=http%3A%2F%2Fviki.com%2Fko";  // <--Korean subtitles
+            "&url=http%3A%2F%2Fviki.com%2Fko";  // <-- Korean subtitles
             //"&url=http%3A%2F%2Fviki.com%2Fen";  // <-- English subtitles
         xhr.open("GET", subtitleURL, true);
         xhr.send();
