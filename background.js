@@ -1,3 +1,5 @@
+// TODO: restrict content script matches
+
 // When the icon next to the address bar is clicked, subtitles start playing.
 chrome.browserAction.onClicked.addListener(function(tab) {
     chrome.tabs.getSelected(null, function(tab) {
@@ -14,17 +16,13 @@ chrome.browserAction.onClicked.addListener(function(tab) {
         
         // Download all subtitles mentioned in the user-defined css.
         var subtitles = {};
-        with_style_rules_and_languages_used_in_css(function(style, rules, languages) {
+        with_style_and_inferred_languages(function(style, languages) {
             wait = countdown(languages.length);
             for (var i = 0; i < languages.length; i++) {
                 request(subtitles, id, languages[i], wait, function() {
                     // Finally, display the subtitles.
-                    alert("Will now display the subtitles.");
-                    console.log(rules);
-                    console.log(subtitles);
                     chrome.tabs.sendMessage(tab.id, {
                         style: style,
-                        rules: rules,
                         languages: languages,
                         subtitles: subtitles
                     });
@@ -65,7 +63,7 @@ function countdown(n) {
 }
 
 // Load options defined by user: css rules and subtitle languages.
-function with_style_rules_and_languages_used_in_css(callback) {
+function with_style_and_inferred_languages(callback) {
     chrome.storage.sync.get(null, function(items) {
         // Parse the stored style string. TODO: Handle undefined.
         var styleEl = document.createElement("style");
@@ -74,17 +72,17 @@ function with_style_rules_and_languages_used_in_css(callback) {
         var rules = styleEl.sheet.rules;
         
         // Infer the subtitle languages from the css rules.
-        var subtitles = [];
+        var languages = [];
         for (var i = 0; i < rules.length; i++) {
             var re = /\.most-([A-z][A-z])\W/g;  // Match things like ".most-en,".
             var m;
             while (m = re.exec(rules[i].selectorText + " ")) {
-                if (subtitles.indexOf(m[1]) == -1) {
-                    subtitles.push(m[1]);  // Store things like "en".
+                if (languages.indexOf(m[1]) == -1) {
+                    languages.push(m[1]);  // Store things like "en".
                 }
             }
         }
         
-        callback(items.customStyle, rules, subtitles);
+        callback(items.customStyle, languages);
     });
 }

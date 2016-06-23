@@ -11,7 +11,7 @@ function repopulate_subtitles() {
     var samples = {
         en: "<i>He doesn't have any friends in Korea so he probably doesn't even have anyone to eat with.</i>",
         de: "<i> Er hat keine Freunde in Korea, also wird er wahrscheinlich niemanden haben, mit dem er was essen kann.</i>"
-    };
+    };  // TODO: add more sample languages
     
     var languages = get_used_languages();
     for (var i = 0; i < languages.length; i++) {
