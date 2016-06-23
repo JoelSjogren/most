@@ -14,7 +14,7 @@
     "128": "icon128.png"
   },
   "manifest_version": 2,
-  "background": { "scripts": ["background.js"] },
+  "background": { "scripts": ["options_load.js", "background.js"] },
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://*/*"],
@@ -22,5 +22,6 @@
       "run_at": "document_end"
     }
   ],
-  "options_page": "options.html"
+  "options_page": "options.html",
+  "web_accessible_resources": ["options_default.css"]
 }

@@ -1,0 +1,19 @@
+.most-subtitles {
+    position: absolute;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999999;
+    pointer-events: none;
+    font-size: 24px;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px black;
+}
+
+.most-en {
+    top: 0%;
+}
+
+.most-de {
+    bottom: 4px;
+}

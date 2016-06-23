@@ -40,7 +40,15 @@ function get_used_languages() {
 }
 
 function restore_options() {
-    chrome.storage.sync.get(null, function(items) {
+    with_style(function(style, is_default) {
+        $("#custom-style")[0].innerHTML = style;
+        $("#config-area")[0].innerHTML = style;
+        if (is_default) {
+            $("#remove")[0].disabled = true;
+        }
+        repopulate_subtitles();
+    });
+    /*chrome.storage.sync.get(null, function(items) {
         if (items.customStyle === undefined) {
             $("#remove")[0].disabled = true;
         } else {
@@ -50,7 +58,7 @@ function restore_options() {
         $("#config-area")[0].innerHTML = $("#custom-style")[0].innerHTML;
         
         repopulate_subtitles();
-    });
+    });*/
 }
 
 function save_options() {

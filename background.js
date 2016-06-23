@@ -64,10 +64,11 @@ function countdown(n) {
 
 // Load options defined by user: css rules and subtitle languages.
 function with_style_and_inferred_languages(callback) {
-    chrome.storage.sync.get(null, function(items) {
+    //chrome.storage.sync.get(null, function(items) {
+    with_style(function(style) {
         // Parse the stored style string. TODO: Handle undefined.
         var styleEl = document.createElement("style");
-        styleEl.innerHTML = items.customStyle;
+        styleEl.innerHTML = style;
         document.head.appendChild(styleEl);
         var rules = styleEl.sheet.rules;
         
@@ -83,6 +84,6 @@ function with_style_and_inferred_languages(callback) {
             }
         }
         
-        callback(items.customStyle, languages);
+        callback(style, languages);
     });
 }
