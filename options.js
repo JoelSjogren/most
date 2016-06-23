@@ -1,10 +1,6 @@
 function handle_input(e) {
-    var styleEl = document.getElementById('custom-style');
-    var inputEl = document.getElementById('config-area');
-    var saveEl = document.getElementById('save');
-    
-    styleEl.innerHTML = inputEl.value;
-    saveEl.disabled = false;
+    $("#custom-style")[0].innerHTML = $("#config-area")[0].value;
+    $("#save")[0].disabled = false;
     
     repopulate_subtitles();
 }
@@ -17,7 +13,6 @@ function repopulate_subtitles() {
         de: "<i> Er hat keine Freunde in Korea, also wird er wahrscheinlich niemanden haben, mit dem er was essen kann.</i>"
     };
     
-    var styleEl = document.getElementById('custom-style');
     var languages = get_used_languages();
     for (var i = 0; i < languages.length; i++) {
         var div = document.createElement("div");
@@ -25,17 +20,17 @@ function repopulate_subtitles() {
         div.innerHTML = samples[languages[i]] ||
             "[No sample available for language " + languages[i] + ".]" +
             "<br>[Some more text.]";
-        document.getElementById("common-container").appendChild(div);
+        $("#common-container")[0].appendChild(div);
     }
 }
 
 function get_used_languages() {
     result = [];
-    var styleEl = document.getElementById('custom-style');
-    for (var i = 0; i < styleEl.sheet.rules.length; i++) {
+    var rules = $("#custom-style")[0].sheet.rules;
+    for (var i = 0; i < rules.length; i++) {
         var re = /\.most-([A-z][A-z])\W/g;
         var m;
-        while (m = re.exec(styleEl.sheet.rules[i].selectorText + " ")) {
+        while (m = re.exec(rules[i].selectorText + " ")) {
             if (result.indexOf(m[1]) == -1) {
                 result.push(m[1]);
             }
@@ -45,33 +40,34 @@ function get_used_languages() {
 }
 
 function restore_options() {
-    var styleEl = document.getElementById('custom-style');
-    var inputEl = document.getElementById('config-area');
-    
     chrome.storage.sync.get(null, function(items) {
-        if (items.customStyle !== undefined) {
-            styleEl.innerHTML = items.customStyle;
+        if (items.customStyle === undefined) {
+            $("#remove")[0].disabled = true;
+        } else {
+            $("#custom-style")[0].innerHTML = items.customStyle;
         }
-        inputEl.innerHTML = styleEl.innerHTML;
+        
+        $("#config-area")[0].innerHTML = $("#custom-style")[0].innerHTML;
+        
+        repopulate_subtitles();
     });
-    
-    repopulate_subtitles();
 }
 
 function save_options() {
-    var styleEl = document.getElementById('custom-style')
-  
-    chrome.storage.sync.set({customStyle: styleEl.innerHTML}, function() {
-        var saveEl = document.getElementById('save');
-        saveEl.disabled = true;
+    var customStyle = $("#custom-style")[0].innerHTML;
+    
+    chrome.storage.sync.set({customStyle: customStyle}, function() {
+        $("#save")[0].disabled = true;
+        $("#remove")[0].disabled = false;
     });
 }
 
 function remove_storage() {
     chrome.storage.sync.remove('customStyle');
+    $("#remove")[0].disabled = true;
 }
 
 $("#config-area").on('input', handle_input);
 document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click', save_options);
-document.getElementById('remove').addEventListener('click', remove_storage);
+$("#save")[0].addEventListener('click', save_options);
+$("#remove")[0].addEventListener('click', remove_storage);
