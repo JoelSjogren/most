@@ -2,7 +2,7 @@
   "name": "MoST Subtitles",
   "version": "0.6",
   "permissions": [
-    "tabs", "http://downsub.com/"
+    "tabs", "http://downsub.com/", "storage"
   ],
   "browser_action": {
       "default_title": "MoST Subtitles",
@@ -21,5 +21,6 @@
       "js": ["zepto.js", "overlay.js"],
       "run_at": "document_end"
     }
-  ]
+  ],
+  "options_page": "options.html"
 }

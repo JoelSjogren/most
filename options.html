@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MoST Subtitles Options</title>
+<style id="custom-style">
+.most-common {
+    position: absolute;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999999;
+    pointer-events: none;
+    font-size: 24px;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px black;
+}
+
+.most-en {
+    top: 0%;
+}
+
+.most-de {
+    bottom: 4px;
+}
+</style>
+<style>
+#flashObject {
+    width: 600px;
+}
+
+#common-container {
+    display: inline-block;
+    position: relative;
+}
+</style>
+<script src="zepto.js"></script>
+</head>
+<body>
+
+<div id="common-container">
+    <img id="flashObject" src="sample.png"></img>
+    <div class="most-common most-en"><i>He doesn't have any friends in Korea so he probably doesn't even have anyone to eat with.</i></div>
+    <div class="most-common most-de"><i> Er hat keine Freunde in Korea, also wird er wahrscheinlich niemanden haben, mit dem er was essen kann.</i></div>
+</div>
+
+<div>
+  <textarea id="config-area" rows="20" cols="60"></textarea>
+  <br>
+  <button id="save" disabled="disabled">Save</button>
+</div>
+
+<script src="options.js"></script>
+
+</body>
+</html>
+
