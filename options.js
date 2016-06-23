@@ -25,7 +25,7 @@ function repopulate_subtitles() {
 }
 
 function get_used_languages() {
-    result = [];
+    var result = [];
     var rules = $("#custom-style")[0].sheet.rules;
     for (var i = 0; i < rules.length; i++) {
         var re = /\.most-([A-z][A-z])\W/g;

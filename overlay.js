@@ -30,8 +30,8 @@ $(document).ready(function () {
     function init(srt, sender, callback) {
         startSync();
         addOverlay();
-        parseSubtitles(srt);
-        startPlayback();
+        //parseSubtitles(srt);
+        //startPlayback();
     }
 
     chrome.extension.onMessage.addListener(init);
@@ -78,7 +78,41 @@ $(document).ready(function () {
 
     function addOverlay() {
         if (!overlay) {
-            overlay = $("<div id='most_overlay'></div>");
+            overlay = $("<div id='most-overlay'>SUBTITLES</div>");
+            $("body").append(overlay);
+        }
+        
+        // Find the positioning of the video player, or use (bad) defaults.
+        var video = $("#flashObject")[0] || $("#subber_player")[0];
+        var videoRect = video ? video.getBoundingClientRect()
+                              : {'width': 600, 'left': 20, 'bottom': 20};
+        
+        // Configure the looks and position.
+        shadow = "0 0 black";  // transparent text shadow:
+        for (var i=-1; i<=1; i++) for (var j=-1; j<=1; j++)
+            shadow = i + "px " + j + "px rgba(0, 0, 0, 1), " + shadow;
+        for (var i=-2; i<=2; i++) for (var j=-2; j<=2; j++)
+            shadow = i + "px " + j + "px rgba(0, 0, 0, 0.4), " + shadow;
+        for (var i=-3; i<=3; i++) for (var j=-3; j<=3; j++)
+            shadow = i + "px " + j + "px rgba(0, 0, 0, 0.1), " + shadow;
+            
+        overlay.css({
+            position: "fixed",
+            width: videoRect.width + "px",
+            height: "200px",
+            left: videoRect.left,
+            top: videoRect.bottom,
+            background: "#0003",
+            zIndex: "99999999",
+            pointerEvents: "none",
+            fontSize: "24px",
+            textAlign: "center",
+            color: "#fff",
+            textShadow: shadow
+        });
+        /*
+        if (!overlay) {
+            overlay = $("<div id='most-overlay'></div>");
             $("body").append(overlay);
         }
         
@@ -109,7 +143,7 @@ $(document).ready(function () {
             textAlign: "center",
             color: "#fff",
             textShadow: shadow
-        });
+        });*/
     }
 
 

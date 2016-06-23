@@ -12,18 +12,69 @@ chrome.browserAction.onClicked.addListener(function(tab) {
         }
         id = id.split("?")[0];
         
-        // Make a request to DownSub.
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function(response) {
-            if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-                // Display the subtitles.
-                chrome.tabs.sendMessage(tab.id, xhr.responseText);
+        // Download all subtitles mentioned in the user-defined css.
+        var subtitles = [];
+        with_rules_and_languages_used_in_css(function(rules, languages) {
+            wait = countdown(languages.length);
+            for (var i = 0; i < languages.length; i++) {
+                request(subtitles, id, languages[i], wait, function() {
+                    // Finally, display the subtitles.
+                    alert("Will now display the subtitles.");
+                    console.log(rules);
+                    console.log(subtitles);
+                    chrome.tabs.sendMessage(tab.id, {rules: rules, subtitles: subtitles});
+                });
             }
-        };
-        var subtitleURL = 'http://downsub.com/index.php?title=' + id +
-            "&url=http%3A%2F%2Fviki.com%2Fko";  // <-- Korean subtitles
-            //"&url=http%3A%2F%2Fviki.com%2Fen";  // <-- English subtitles
-        xhr.open("GET", subtitleURL, true);
-        xhr.send();
+        });
     });
 });
+
+// Make a request to DownSub and store the result in 'subtitles'.
+// Then either wait for other requests to finish or call the callback.
+function request(subtitles, videoId, language, wait, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(response) {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+            if (xhr.status == 200) {
+                subtitles[language] = xhr.responseText;
+            }
+            if (!wait()) {
+                callback();
+            }
+        }
+    };
+    var subtitleURL = 'http://downsub.com/index.php?title=' + videoId +
+        "&url=http%3A%2F%2Fviki.com%2F" + language;
+    xhr.open("GET", subtitleURL, true);
+    xhr.send();
+}
+
+// A simple counter: n-1, n-2, n-3, ...
+function countdown(n) {
+    return function () { return n -= 1; };
+}
+
+// Load options defined by user: css rules and subtitle languages.
+function with_rules_and_languages_used_in_css(callback) {
+    chrome.storage.sync.get(null, function(items) {
+        // Parse the stored style string. TODO: Handle undefined.
+        var styleEl = document.createElement("style");
+        styleEl.innerHTML = items.customStyle;
+        document.head.appendChild(styleEl);
+        var rules = styleEl.sheet.rules;
+        
+        // Infer the subtitle languages from the css rules.
+        var subtitles = [];
+        for (var i = 0; i < rules.length; i++) {
+            var re = /\.most-([A-z][A-z])\W/g;  // Match things like ".most-en,".
+            var m;
+            while (m = re.exec(rules[i].selectorText + " ")) {
+                if (subtitles.indexOf(m[1]) == -1) {
+                    subtitles.push(m[1]);  // Store things like "en".
+                }
+            }
+        }
+        
+        callback(rules, subtitles);
+    });
+}
