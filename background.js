@@ -13,8 +13,8 @@ chrome.browserAction.onClicked.addListener(function(tab) {
         id = id.split("?")[0];
         
         // Download all subtitles mentioned in the user-defined css.
-        var subtitles = [];
-        with_rules_and_languages_used_in_css(function(rules, languages) {
+        var subtitles = {};
+        with_style_rules_and_languages_used_in_css(function(style, rules, languages) {
             wait = countdown(languages.length);
             for (var i = 0; i < languages.length; i++) {
                 request(subtitles, id, languages[i], wait, function() {
@@ -22,7 +22,12 @@ chrome.browserAction.onClicked.addListener(function(tab) {
                     alert("Will now display the subtitles.");
                     console.log(rules);
                     console.log(subtitles);
-                    chrome.tabs.sendMessage(tab.id, {rules: rules, subtitles: subtitles});
+                    chrome.tabs.sendMessage(tab.id, {
+                        style: style,
+                        rules: rules,
+                        languages: languages,
+                        subtitles: subtitles
+                    });
                 });
             }
         });
@@ -36,10 +41,15 @@ function request(subtitles, videoId, language, wait, callback) {
     xhr.onreadystatechange = function(response) {
         if (xhr.readyState == XMLHttpRequest.DONE) {
             if (xhr.status == 200) {
+                console.log("Obtained subtitles for " + language);
                 subtitles[language] = xhr.responseText;
+            } else {
+                console.log("Failed to obtain subtitles for " + language);
             }
             if (!wait()) {
                 callback();
+            } else {
+                console.log("Waiting...");
             }
         }
     };
@@ -55,7 +65,7 @@ function countdown(n) {
 }
 
 // Load options defined by user: css rules and subtitle languages.
-function with_rules_and_languages_used_in_css(callback) {
+function with_style_rules_and_languages_used_in_css(callback) {
     chrome.storage.sync.get(null, function(items) {
         // Parse the stored style string. TODO: Handle undefined.
         var styleEl = document.createElement("style");
@@ -75,6 +85,6 @@ function with_rules_and_languages_used_in_css(callback) {
             }
         }
         
-        callback(rules, subtitles);
+        callback(items.customStyle, rules, subtitles);
     });
 }

@@ -23,14 +23,26 @@ $(document).ready(function () {
     var pages = [];
     var current;
     
-    // Text is continuously written as html to a single element.
+    // Text is continuously written as html, language by language.
     var overlay;
+    var views = [];
     var timer;
     
-    function init(srt, sender, callback) {
+    // The user chooses some style.
+    var style;
+    var styleEl;
+    var rules;
+    var languages;
+    
+    function init(message, sender, callback) {
+        debugger;
+        style = message.style;
+        rules = message.rules;
+        languages = message.languages;
+    
         startSync();
         addOverlay();
-        //parseSubtitles(srt);
+        //parseSubtitles(message.subtitles);
         //startPlayback();
     }
 
@@ -80,7 +92,20 @@ $(document).ready(function () {
         if (!overlay) {
             overlay = $("<div id='most-overlay'>SUBTITLES</div>");
             $("body").append(overlay);
+            
+            for (var i = 0; i < languages.length; i++) {
+                var view = document.createElement("div");
+                view.className = "most-subtitles most-" + languages[i];
+                view.innerHTML = "[" + languages[i] + "]";
+                views[i] = view;
+                overlay.append(view);
+            }
         }
+        
+        // Set the style
+        var styleEl = document.createElement("style");
+        styleEl.innerHTML = style;
+        $("head").append(styleEl);
         
         // Find the positioning of the video player, or use (bad) defaults.
         var video = $("#flashObject")[0] || $("#subber_player")[0];
@@ -99,10 +124,10 @@ $(document).ready(function () {
         overlay.css({
             position: "fixed",
             width: videoRect.width + "px",
-            height: "200px",
+            height: videoRect.height + "px",
             left: videoRect.left,
-            top: videoRect.bottom,
-            background: "#0003",
+            top: videoRect.top,
+            background: "rgba(255, 150, 0, 0.5)",
             zIndex: "99999999",
             pointerEvents: "none",
             fontSize: "24px",
@@ -110,40 +135,6 @@ $(document).ready(function () {
             color: "#fff",
             textShadow: shadow
         });
-        /*
-        if (!overlay) {
-            overlay = $("<div id='most-overlay'></div>");
-            $("body").append(overlay);
-        }
-        
-        // Find the positioning of the video player, or use (bad) defaults.
-        var video = $("#flashObject")[0] || $("#subber_player")[0];
-        var videoRect = video ? video.getBoundingClientRect()
-                              : {'width': 600, 'left': 20, 'bottom': 20};
-        
-        // Configure the looks and position.
-        shadow = "0 0 black";  // transparent text shadow:
-        for (var i=-1; i<=1; i++) for (var j=-1; j<=1; j++)
-            shadow = i + "px " + j + "px rgba(0, 0, 0, 1), " + shadow;
-        for (var i=-2; i<=2; i++) for (var j=-2; j<=2; j++)
-            shadow = i + "px " + j + "px rgba(0, 0, 0, 0.4), " + shadow;
-        for (var i=-3; i<=3; i++) for (var j=-3; j<=3; j++)
-            shadow = i + "px " + j + "px rgba(0, 0, 0, 0.1), " + shadow;
-            
-        overlay.css({
-            position: "fixed",
-            width: videoRect.width + "px",
-            height: "200px",
-            left: videoRect.left,
-            top: videoRect.bottom,
-            background: "#0000",
-            zIndex: "99999999",
-            pointerEvents: "none",
-            fontSize: "24px",
-            textAlign: "center",
-            color: "#fff",
-            textShadow: shadow
-        });*/
     }
 
 
