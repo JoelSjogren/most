@@ -31,7 +31,6 @@ $(document).ready(function () {
         writers = [];
         for (var i = 0; i < message.languages.length; i++) {
             var srt = message.subtitles[message.languages[i]];
-            //debugger;
             writers[i] = new Writer(message.languages[i], srt);
             writers[i].play();
         }
@@ -131,9 +130,14 @@ function Writer(language, srt) {
         $(".uid-" + uid).remove();
     }
     
-    this.show("Loaded " + this.pages.length + " pages.", 2000, language + "-info");
-    
-    //debugger;
+    // Info text after trying to initialize the writer.
+    if (this.pages.length > 0) {
+        this.show("Loaded " + this.pages.length + " pages.", 2000,
+            language + "-info");
+    } else {
+        this.show("Failed to load subtitles for language " + language, 4000,
+            language + "-info");
+    }
 
 }
 
@@ -226,6 +230,8 @@ function strToMs(loc) {
 
 // Turn an srt into computation-friendly form: pages.
 function parseSubtitles(srt) {
+    if (srt === undefined || srt === "") return [];
+
     var pages = [];
 
     var srt2 = srt.replace(/\r\n|\r|\n/g, '\n')  // Normalize newlines.

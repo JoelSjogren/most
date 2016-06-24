@@ -40,6 +40,7 @@ function request(subtitles, videoId, language, wait, callback) {
         if (xhr.readyState == XMLHttpRequest.DONE) {
             if (xhr.status == 200) {
                 console.log("Obtained subtitles for " + language);
+                console.log(xhr.responseText);
                 subtitles[language] = xhr.responseText;
             } else {
                 console.log("Failed to obtain subtitles for " + language);
