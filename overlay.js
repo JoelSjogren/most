@@ -6,6 +6,8 @@ Subtitles are downloaded via DownSub (but we could have used the api).
 
 A transparent overlay is created as a div using Zepto; see addOverlay.
 
+The style of subtitles is configurable with CSS in a Chrome options page.
+
 */
 
 // Tip: Use the 'debugger' command to insert a breakpoint!
@@ -23,6 +25,7 @@ var writers = [];
 $(document).ready(function () {
     
     function init(message, sender, callback) {
+        // Stop the old "instance" if there is one.
         clean();
     
         // Initiate communication.
@@ -41,12 +44,10 @@ $(document).ready(function () {
 });
 
 function clean() {
-    // Stop the old "instance" if there is one.
     for (var i = 0; i < writers.length; i++) {
         writers[i].stop();
     }
     
-    //$(".most-subtitles").remove();
     $("#most-overlay").remove();
 }
 
@@ -149,7 +150,8 @@ function specialCode () {
     // Determine how the target player will tell its current position
     // (in seconds).
     var getCurrentTime = function() {
-        // look for the regular player, subtitle editor (flash or html5)
+        // Look for the regular player, subtitle editor (flash or html5)
+        // and segment editor.
         if ("player" in window) {
             return player.getCurrentTime();
         }
@@ -192,23 +194,12 @@ function addOverlay(style) {
                           : {'width': 600, 'left': 20, 'bottom': 20};
     
     // Configure the looks and position.
-    /*
-    shadow = "0 0 black";  // transparent text shadow:
-    for (var i=-1; i<=1; i++) for (var j=-1; j<=1; j++)
-        shadow = i + "px " + j + "px rgba(0, 0, 0, 1), " + shadow;
-    for (var i=-2; i<=2; i++) for (var j=-2; j<=2; j++)
-        shadow = i + "px " + j + "px rgba(0, 0, 0, 0.4), " + shadow;
-    for (var i=-3; i<=3; i++) for (var j=-3; j<=3; j++)
-        shadow = i + "px " + j + "px rgba(0, 0, 0, 0.1), " + shadow;
-    */
-        
     overlay.css({
         position: "fixed",
         width: videoRect.width + "px",
         height: videoRect.height + "px",
         left: videoRect.left,
         top: videoRect.top,
-        //background: "rgba(255, 150, 0, 0.5)",
         zIndex: "99999999",
         pointerEvents: "none",
         textAlign: "center"

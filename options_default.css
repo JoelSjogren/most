@@ -2,9 +2,7 @@
     position: absolute;
     width: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 99999999;
-    pointer-events: none;
-    font-size: 24px;
+    font-size: 22px;
     text-align: center;
     color: white;
     text-shadow: 1px 1px black;

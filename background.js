@@ -1,5 +1,3 @@
-// TODO: restrict content script matches
-
 // When the icon next to the address bar is clicked, subtitles start playing.
 chrome.browserAction.onClicked.addListener(function(tab) {
     chrome.tabs.getSelected(null, function(tab) {
@@ -65,9 +63,8 @@ function countdown(n) {
 
 // Load options defined by user: css rules and subtitle languages.
 function with_style_and_inferred_languages(callback) {
-    //chrome.storage.sync.get(null, function(items) {
     with_style(function(style) {
-        // Parse the stored style string. TODO: Handle undefined.
+        // Parse the stored style string.
         var styleEl = document.createElement("style");
         styleEl.innerHTML = style;
         document.head.appendChild(styleEl);
