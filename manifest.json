@@ -17,7 +17,8 @@
   "background": { "scripts": ["options_load.js", "background.js"] },
   "content_scripts": [
     {
-      "matches": ["https://*/*", "http://*/*"],
+      "matches": ["https://www.viki.com/*", "http://www.viki.com/*",
+            "https://subber.viki.com/*", "http://subber.viki.com/*"],
       "js": ["zepto.js", "overlay.js"],
       "run_at": "document_end"
     }
