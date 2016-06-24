@@ -83,7 +83,7 @@ function Writer(language, srt) {
                 if (page['loc0'] <= local + period
                         && local + period <= page['loc1']
                         && that.current != i) {
-                    that.show(page['s'], page['loc1']-local, i);
+                    that.show(page['s'], page['loc1']-local, language + "-" + i);
                 }
             }
             
@@ -109,7 +109,7 @@ function Writer(language, srt) {
     
         // Write the text to screen.
         var textEl = document.createElement("div");
-        textEl.className = "uid_" + uid;
+        textEl.className = "uid-" + uid;
         textEl.innerHTML = text;
         this.element.appendChild(textEl);
         
@@ -118,7 +118,7 @@ function Writer(language, srt) {
         
         // Remember to remove it after a while.
         var that = this;
-        window.setTimeout(function () {
+        window.setTimeout(function () {  // TODO: don't remove it if paused.
             if (that.current === uid) {
                 that.hide(uid);
                 that.current = undefined;
@@ -128,10 +128,10 @@ function Writer(language, srt) {
 
     // Hide text. Inverse of 'show'.
     this.hide = function(uid) {
-        $(".uid_" + uid).remove();
+        $(".uid-" + uid).remove();
     }
     
-    this.show("Loaded " + this.pages.length + " pages.", 2000, "info");
+    this.show("Loaded " + this.pages.length + " pages.", 2000, language + "-info");
     
     //debugger;
 
