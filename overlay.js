@@ -82,7 +82,7 @@ function Writer(language, srt) {
                 // the " + period" here is just for fine tuning, not optimal
                 if (page['loc0'] <= local + period
                         && local + period <= page['loc1']
-                        && that.current != i) {
+                        && that.current != language + "-" + i) {
                     that.show(page['s'], page['loc1']-local, language + "-" + i);
                 }
             }
