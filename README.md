@@ -7,6 +7,6 @@ The code is largely inspired by chrome-subtitles and subber, but more minimal an
 
 Install this under Tools -> Extensions (Enable developer mode) and then add this directory as an unpacked extension.
 
-In this early version, only Korean is supported.
+In early versions, only Korean was supported, but it is now possible to view as many languages as you want! In the options page, simply add more blocks, for example `.most-de { bottom: -100px; height: 100px; }` for German subtitles just below the player.
 
 Visit https://github.com/JoelSjogren/most to fork, contribute, report bugs and request features!

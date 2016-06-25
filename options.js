@@ -20,7 +20,7 @@ function repopulate_subtitles() {
         div.innerHTML = samples[languages[i]] ||
             "[No sample available for language " + languages[i] + ".]" +
             "<br>[Some more text.]";
-        $("#common-container")[0].appendChild(div);
+        $("#most-overlay")[0].appendChild(div);
     }
 }
 
@@ -48,17 +48,6 @@ function restore_options() {
         }
         repopulate_subtitles();
     });
-    /*chrome.storage.sync.get(null, function(items) {
-        if (items.customStyle === undefined) {
-            $("#remove")[0].disabled = true;
-        } else {
-            $("#custom-style")[0].innerHTML = items.customStyle;
-        }
-        
-        $("#config-area")[0].innerHTML = $("#custom-style")[0].innerHTML;
-        
-        repopulate_subtitles();
-    });*/
 }
 
 function save_options() {
