@@ -158,8 +158,8 @@ function specialCode () {
         if ("subber_player_flash_api" in window) {
             return subber_player_flash_api.player.currentTime();
         }
-        if ("subber_player" in window) {
-            return subber_player.player.currentTime();
+        if ("subber_player_html5_api" in window) {
+            return subber_player_html5_api.player.currentTime();
         }
     }
     
