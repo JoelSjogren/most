@@ -192,7 +192,8 @@ function addOverlay(style) {
     $("body").append(overlay);
     
     // Find the positioning of the video player, or use (bad) defaults.
-    var video = $("#flashObject")[0] || $("#subber_player")[0];
+    //var video = $("#flashObject")[0] || $("#subber_player")[0];
+    var video = $("#video-player_html5_api")[0];  // TODO fix subber player support
     var videoRect = video ? video.getBoundingClientRect()
                           : {'width': 600, 'left': 20, 'bottom': 20};
     
