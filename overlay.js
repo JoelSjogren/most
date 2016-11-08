@@ -6,16 +6,19 @@ Subtitles are downloaded via DownSub (but we could have used the api).
 
 A transparent overlay is created as a div using Zepto; see addOverlay.
 
-The style of subtitles is configurable with CSS in a Chrome options page.
+Subtitles are configurable with CSS in a Chrome options page.
 
 */
 
 // Tip: Use the 'debugger' command to insert a breakpoint!
 
-/*  Developer's notes (strange behavior)
+/*  Developer's notes
 
 In order to access the global variable 'player' at Viki when debugging using
 Chrome's Developer Tools, the 'Elements' tab must be active.
+
+UPDATE 2016-10-07: player.player.tech_.textTracks() will be a list of all
+subtitles for the current episode! This means that DownSub could be replaced.
 
 */
 
