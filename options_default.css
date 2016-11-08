@@ -2,7 +2,7 @@
     position: absolute;
     width: 100%;
     background: rgba(0, 0, 0, 0.5);
-    font-size: 22px;
+    font-size: 26px;
     text-align: center;
     color: white;
     text-shadow: 1px 1px black;
@@ -12,6 +12,7 @@
     top: 0%;
 }
 
-.most-de {
-    bottom: 4px;
+.most-ko {
+    bottom: 0%;
 }
+
