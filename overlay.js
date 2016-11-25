@@ -203,7 +203,7 @@ function addOverlay(style) {
         height: videoRect.height + "px",
         left: videoRect.left,
         top: videoRect.top,
-        zIndex: "99999999",
+        zIndex: "2147483647",
         pointerEvents: "none",
         textAlign: "center"
     });
