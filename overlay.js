@@ -109,6 +109,9 @@ function Writer(language, srt) {
         if (this.current !== undefined) {
             this.hide(this.current);
         }
+        
+        // Update video geometry. TODO: Should this line be somewhere else?
+        updateBasicCSS();
     
         // Write the text to screen.
         var textEl = document.createElement("div");
@@ -186,18 +189,14 @@ function startSync() {
         .appendChild(script);
 }
 
-function addOverlay(style) {    
-    // Create the overlay
-    overlay = $("<div id='most-overlay'></div>");
-    $("body").append(overlay);
-    
+function updateBasicCSS() {
     // Find the positioning of the video player, or use (bad) defaults.
     var video = $("#video-player_html5_api")[0] || $("#subber_player")[0];
-    var videoRect = video ? video.getBoundingClientRect()
-                          : {'width': 600, 'left': 20, 'bottom': 20};
+    var videoRect = video.getBoundingClientRect();
     
     // Configure the looks and position.
-    overlay.css({
+    //$("#most-overlay").removeAttr("style"); ?
+    $("#most-overlay").css({
         position: "fixed",
         width: videoRect.width + "px",
         height: videoRect.height + "px",
@@ -207,8 +206,15 @@ function addOverlay(style) {
         pointerEvents: "none",
         textAlign: "center"
     });
+}
+
+function addOverlay(style) {
+    // Create the overlay
+    overlay = $("<div id='most-overlay'></div>");
+    $("body").append(overlay);
     
     // Set the subtitle style
+    updateBasicCSS();
     var styleEl = document.createElement("style");
     styleEl.innerHTML = style;
     $("head").append(styleEl);
