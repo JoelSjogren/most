@@ -161,6 +161,9 @@ function specialCode () {
         if ("player" in window) {
             return player.getCurrentTime();
         }
+        if ("html5player" in window) {
+            return html5player.player.getCurrentTime();
+        }
         if ("subber_player_flash_api" in window) {
             return subber_player_flash_api.player.currentTime();
         }
