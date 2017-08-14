@@ -194,7 +194,8 @@ function startSync() {
 
 function updateBasicCSS() {
     // Find the positioning of the video player, or use (bad) defaults.
-    var video = $("#video-player_html5_api")[0] || $("#subber_player")[0];
+    var video = $("#video-player_Shaka_api")[0] ||
+        $("#video-player_html5_api")[0] || $("#subber_player")[0];
     var videoRect = video.getBoundingClientRect();
     
     // Configure the looks and position.
@@ -233,6 +234,8 @@ function strToMs(loc) {
 
 // Turn an srt into computation-friendly form: pages.
 function parseSubtitles(srt) {
+    //console.log("parseSubtitles", srt);
+    
     if (srt === undefined || srt === "") return [];
 
     var pages = [];
