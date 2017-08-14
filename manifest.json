@@ -1,6 +1,6 @@
 {
   "name": "MoST Subtitles",
-  "version": "0.7.1",
+  "version": "0.8",
   "permissions": [
     "tabs", "http://downsub.com/", "storage"
   ],

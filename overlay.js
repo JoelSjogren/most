@@ -1,24 +1,23 @@
 /*  MoST Subtitle Player :: Implementation Overview
 
-Code is inserted into the target web page, making syncing possible.
+Code is inserted into the target web page.
 
-Subtitles are downloaded via DownSub (but we could have used the api).
+We tap into the existing subtitle system.
 
-A transparent overlay is created as a div using Zepto; see addOverlay.
+A transparent overlay is created as a div.
 
 Subtitles are configurable with CSS in a Chrome options page.
 
-*/
+Things were more complicated before. See older commits.
 
-// Tip: Use the 'debugger' command to insert a breakpoint!
+*/
 
 /*  Developer's notes
 
 In order to access the global variable 'player' at Viki when debugging using
 Chrome's Developer Tools, the 'Elements' tab must be active.
 
-UPDATE 2016-10-07: player.player.tech_.textTracks() will be a list of all
-subtitles for the current episode! This means that DownSub could be replaced.
+Tip: Use the 'debugger' command to insert a breakpoint!
 
 */
 
@@ -74,7 +73,7 @@ function specialCode (languages) {
     for (var i = 0; i < languages.length; i++) {
         // Html entry for subtitles in one language.
         var element = document.createElement("div");
-        element.className = "most-subtitles most-" + language;
+        element.className = "most-subtitles most-" + languages[i];
         $("#most-overlay")[0].appendChild(element);
     
         // Cue listener.
@@ -88,32 +87,21 @@ function specialCode (languages) {
             track.addEventListener('cuechange', function() {
                 console.log("> cue change (" + language + ") <");
                 
+                // Get the new subtitle page, or else an empty string.
                 var cue = "";
                 if (track.activeCues[0]) {
                     cue = track.activeCues[0].text;
                 }
-                element.innerHTML = cue;
                 
-                // use this.element here
-                /*
-                // Remove old text. (This is an exceptional case.)
-                if (this.current !== undefined) {
-                    this.hide(this.current);
-                }
-            
-                // Write the text to screen.
-                var textEl = document.createElement("div");
-                textEl.className = "uid-" + uid;
-                textEl.innerHTML = text;
-                this.element.appendChild(textEl);
-                */
+                // Show the new subtitle page.
+                element.innerHTML = cue;
             });
         }
     }
 }
 
 function updateVideoRectangle() {
-    // The video player.
+    // Get the video player.
     var video = $("#video-player_Shaka_api")[0] ||
         $("#video-player_html5_api")[0] || $("#subber_player")[0];
     var videoRect = video.getBoundingClientRect();
@@ -124,7 +112,7 @@ function updateVideoRectangle() {
         height: videoRect.height + "px",
         left: videoRect.left,
         top: videoRect.top,
-        zIndex: "2147483647",
+        zIndex: "2147483647",  // Place subtitles on top of the video.
         pointerEvents: "none",
         textAlign: "center"
     });
