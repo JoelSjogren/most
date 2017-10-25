@@ -102,7 +102,7 @@ function specialCode (languages) {
 
 function updateVideoRectangle() {
     // Get the video player.
-    var video = $("#video-player_Shaka_api")[0] ||
+    var video = $("[id$=video-player_Shaka_api]")[0] ||
         $("#video-player_html5_api")[0] || $("#subber_player")[0];
     var videoRect = video.getBoundingClientRect();
     
