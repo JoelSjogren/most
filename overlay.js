@@ -77,11 +77,13 @@ function specialCode (languages) {
         $("#most-overlay")[0].appendChild(element);
     
         // Cue listener.
-        var j;  // Find a track with the right language.
-        for (j = 0; j < tracks.length; j++) {
-            if (tracks[j].language == languages[i]) break;
+	// Find a track with the right language.
+        for (var j = 0; j < tracks.length; j++) {
+            if (tracks[j].language == languages[i]) {
+		addCueListener(element, languages[i], tracks[j]);
+		break;
+	    }
         }
-        addCueListener(element, languages[i], tracks[j]);
         
         function addCueListener(element, language, track) {
             track.addEventListener('cuechange', function() {
