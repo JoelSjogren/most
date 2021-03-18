@@ -1,8 +1,8 @@
 {
   "name": "MoST Subtitles",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "permissions": [
-    "tabs", "http://downsub.com/", "storage"
+    "tabs", "storage"
   ],
   "browser_action": {
       "default_title": "MoST Subtitles",
