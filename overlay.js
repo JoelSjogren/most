@@ -59,7 +59,7 @@ function addCueListeners(languages) {
 
 // To be injected -- as a string!
 function specialCode (languages) {
-    var player = html5player.player;
+    //var player = html5player.player;
     var tracks = player.subtitle.videojs.tech_.textTracks_;
     
     // Fill Viki's subtitle cache.
@@ -74,7 +74,7 @@ function specialCode (languages) {
         // Html entry for subtitles in one language.
         var element = document.createElement("div");
         element.className = "most-subtitles most-" + languages[i];
-        $("#most-overlay")[0].appendChild(element);
+	document.getElementById("most-overlay").appendChild(element);
     
         // Cue listener.
 	// Find a track with the right language.
@@ -104,8 +104,7 @@ function specialCode (languages) {
 
 function updateVideoRectangle() {
     // Get the video player.
-    var video = $("[id$=video-player_Shaka_api]")[0] ||
-        $("#video-player_html5_api")[0] || $("#subber_player")[0];
+    var video = $("#html5_player_id_Shaka_api")[0];
     var videoRect = video.getBoundingClientRect();
     
     $("#most-overlay").css({
