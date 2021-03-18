@@ -26,7 +26,7 @@ Tip: Use the 'debugger' command to insert a breakpoint!
 $(document).ready(function () {
     
     function init(message, sender, callback) {
-        alert("Alive!");
+        alert("Hint: Use F11 instead of the fullscreen button to keep dual subtitles in that mode.");
         addOverlay();
         setStyle(message.style);
         addCueListeners(message.languages);
@@ -46,6 +46,9 @@ function setStyle(style) {
     var styleEl = document.createElement("style");
     styleEl.innerHTML = style;
     $("head").append(styleEl);
+
+    // respond to window resize (e.g. F11)
+    window.addEventListener("resize", updateVideoRectangle);
 }
 
 function addCueListeners(languages) {
