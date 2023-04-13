@@ -62,15 +62,18 @@ function addCueListeners(languages) {
 
 // To be injected -- as a string!
 function specialCode (languages) {
-    //var player = html5player.player;
-    var tracks = player.subtitle.videojs.tech_.textTracks_;
+    var tracks = player.subtitleManager.videojs.tech_.textTracks_;
     
     // Fill Viki's subtitle cache.
-    var old = player.getSubtitleLanguage();
+    var old = player.getCurrentSubtitle();
     for (var i = 0; i < languages.length; i++) {
-        player.setSubtitleLanguage(languages[i]);
+        player.subtitleManager.subtitleLanguage = languages[i];
+        player.loadSubtitles();
     }
-    player.setSubtitleLanguage(old);
+    setTimeout(function() {  // Adding delay to workaround bug.
+        player.subtitleManager.subtitleLanguage = old;
+        player.loadSubtitles();
+    }, 1000);
     
     // Register listeners with that cache.
     for (var i = 0; i < languages.length; i++) {
@@ -107,7 +110,7 @@ function specialCode (languages) {
 
 function updateVideoRectangle() {
     // Get the video player.
-    var video = $("#html5_player_id_Shaka_api")[0];
+    var video = document.getElementById("vmplayer_id_html5_api");
     var videoRect = video.getBoundingClientRect();
     
     $("#most-overlay").css({
