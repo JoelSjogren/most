@@ -4,6 +4,7 @@
     background: rgba(0, 0, 0, 0.5);
     font-size: 26px;
     text-align: center;
+    line-height: 2;
     color: white;
     text-shadow: 1px 1px black;
 }

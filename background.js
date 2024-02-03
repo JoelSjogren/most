@@ -1,13 +1,26 @@
+var tabs = [];
+
 // When the icon next to the address bar is clicked, subtitles start playing.
 chrome.browserAction.onClicked.addListener(function(tab) {
-    chrome.tabs.getSelected(null, function(tab) {
-        with_style_and_inferred_languages(function(style, languages) {
-            chrome.tabs.sendMessage(tab.id, {
-                style: style,
-                languages: languages
-            });
+    tabs.push(tab);
+    launch_overlay(tab, true);
+});
+
+function launch_overlay(tab, interactive) {
+    with_style_and_inferred_languages(function(style, languages) {
+        chrome.tabs.sendMessage(tab.id, {
+            style: style,
+            languages: languages,
+	    interactive: interactive
         });
     });
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'options update') {
+	console.log('will try to update');
+	tabs.forEach(tab => launch_overlay(tab, false));
+    }
 });
 
 // Load options defined by user: css rules and subtitle languages.

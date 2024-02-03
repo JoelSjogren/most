@@ -52,6 +52,9 @@ function save_options() {
         $("#save")[0].disabled = true;
         $("#remove")[0].disabled = false;
     });
+
+    // If an instance is already running, make the changes take effect immediately.
+    chrome.runtime.sendMessage({ type: 'options update' }, result => { });
 }
 
 function remove_storage() {

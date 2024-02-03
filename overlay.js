@@ -26,7 +26,10 @@ Tip: Use the 'debugger' command to insert a breakpoint!
 $(document).ready(function () {
     
     function init(message, sender, callback) {
-        alert("Hint: Use F11 instead of the fullscreen button to keep dual subtitles in that mode.");
+        $('#most-overlay').remove();  // hacky cleanup of possible old instances
+        if (message.interactive) {
+            alert("Hint: Use F11 instead of the fullscreen button to keep dual subtitles in that mode.");
+        }
         addOverlay();
         setStyle(message.style);
         addCueListeners(message.languages);
@@ -54,6 +57,7 @@ function setStyle(style) {
 function addCueListeners(languages) {
     // Inject listeners ('specialCode') into the webpage.
     var script = document.createElement('script');
+    script.appendChild(document.createTextNode('var most_dbg = {};'));
     script.appendChild(document.createTextNode(
         '('+ specialCode +')(' + JSON.stringify(languages) + ');'));
     (document.body || document.head || document.documentElement)
@@ -62,38 +66,45 @@ function addCueListeners(languages) {
 
 // To be injected -- as a string!
 function specialCode (languages) {
-    var tracks = player.subtitleManager.videojs.tech_.textTracks_;
+    console.log("special code is actually running");
     
-    // Fill Viki's subtitle cache.
-    var old = player.getCurrentSubtitle();
+    // Make Viki load the required languages; keep the references.
+    var tracks_source = player.subtitleManager.videojs.tech_.textTracks_;
+    var tracks = most_dbg.tracks = {};
+    var old_language = player.getCurrentSubtitle();
     for (var i = 0; i < languages.length; i++) {
-        player.subtitleManager.subtitleLanguage = languages[i];
-        player.loadSubtitles();
+        player.subtitleManager.cleanup();
+        player.subtitleManager.setLanguage(languages[i]);
+        console.assert(tracks_source.length == 1);
+        console.assert(tracks_source[0].language == languages[i]);
+        tracks[i] = tracks_source[0];
     }
-    setTimeout(function() {  // Adding delay to workaround bug.
-        player.subtitleManager.subtitleLanguage = old;
-        player.loadSubtitles();
-    }, 1000);
+    player.subtitleManager.cleanup();
+    player.subtitleManager.setLanguage(old_language);
+
+    // Without this configuration the listeners wouldn't get notified.
+    for (var i = 0; i < languages.length; i++) {
+        if (!(tracks[i] === undefined) && (tracks[i].mode === 'disabled')) {
+            tracks[i].mode = 'hidden';  // known modes: disabled, hidden, showing
+        }
+    }
     
-    // Register listeners with that cache.
+    // Register cue listeners for each language.
     for (var i = 0; i < languages.length; i++) {
         // Html entry for subtitles in one language.
         var element = document.createElement("div");
         element.className = "most-subtitles most-" + languages[i];
-	document.getElementById("most-overlay").appendChild(element);
-    
+        document.getElementById("most-overlay").appendChild(element);
+        
         // Cue listener.
-	// Find a track with the right language.
-        for (var j = 0; j < tracks.length; j++) {
-            if (tracks[j].language == languages[i]) {
-		addCueListener(element, languages[i], tracks[j]);
-		break;
-	    }
+        if (!(tracks[i] === undefined)) {
+            addCueListener(element, languages[i], tracks[i]);
         }
         
         function addCueListener(element, language, track) {
+            console.log("adding listener for: " + language);
             track.addEventListener('cuechange', function() {
-                console.log("> cue change (" + language + ") <");
+                //console.log("> cue change (" + language + ") <");
                 
                 // Get the new subtitle page, or else an empty string.
                 var cue = "";
