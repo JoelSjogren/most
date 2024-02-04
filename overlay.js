@@ -75,9 +75,13 @@ function specialCode (languages) {
     for (var i = 0; i < languages.length; i++) {
         player.subtitleManager.cleanup();
         player.subtitleManager.setLanguage(languages[i]);
-        console.assert(tracks_source.length == 1);
-        console.assert(tracks_source[0].language == languages[i]);
-        tracks[i] = tracks_source[0];
+	if (tracks_source.length == 1
+	        && tracks_source[0] !== undefined
+	        && tracks_source[0].language == languages[i]) {
+	    tracks[i] = tracks_source[0];
+	} else {
+	    alert('subtitles are unavailable for language ' + languages[i]);
+	}
     }
     player.subtitleManager.cleanup();
     player.subtitleManager.setLanguage(old_language);
