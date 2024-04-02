@@ -19,10 +19,10 @@
     {
       "matches": ["https://www.viki.com/*", "http://www.viki.com/*",
             "https://subber.viki.com/*", "http://subber.viki.com/*"],
-      "js": ["zepto.js", "overlay.js"],
+      "js": ["zepto.js", "pinyin-bundle.js", "overlay.js"],
       "run_at": "document_end"
     }
   ],
   "options_page": "options.html",
-  "web_accessible_resources": ["options_default.css"]
+    "web_accessible_resources": ["options_default.css", "pinyin-bundle.js"]
 }

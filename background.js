@@ -6,6 +6,8 @@ chrome.browserAction.onClicked.addListener(function(tab) {
     launch_overlay(tab, true);
 });
 
+
+
 function launch_overlay(tab, interactive) {
     with_style_and_inferred_languages(function(style, languages) {
         chrome.tabs.sendMessage(tab.id, {

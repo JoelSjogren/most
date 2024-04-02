@@ -55,6 +55,17 @@ function setStyle(style) {
 }
 
 function addCueListeners(languages) {
+    // Inject pinyin converter into the webpage.
+    var script = document.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', chrome.extension.getURL('pinyin-bundle.js'));
+    (document.body || document.head || document.documentElement)
+        .appendChild(script);
+
+    // saving these links for future reference (manifest v3...)
+    // https://gist.github.com/danharper/8364399
+    // https://gist.github.com/devjin0617/3e8d72d94c1b9e69690717a219644c7a
+    
     // Inject listeners ('specialCode') into the webpage.
     var script = document.createElement('script');
     script.appendChild(document.createTextNode('var most_dbg = {};'));
@@ -79,6 +90,9 @@ function specialCode (languages) {
 	        && tracks_source[0] !== undefined
 	        && tracks_source[0].language == languages[i]) {
 	    tracks[i] = tracks_source[0];
+	    if (languages[i] == 'zh') {
+		alert('will convert chinese characters to pinyin!');
+	    }
 	} else {
 	    alert('subtitles are unavailable for language ' + languages[i]);
 	}
@@ -114,6 +128,12 @@ function specialCode (languages) {
                 var cue = "";
                 if (track.activeCues[0]) {
                     cue = track.activeCues[0].text;
+		    if (language == 'zh') {
+			//console.log(pinyin);
+			//console.log(cue);
+			//console.log(pinyin(cue));
+			cue = pinyin(cue).join('');
+		    }
                 }
                 
                 // Show the new subtitle page.
