@@ -1,3 +1,5 @@
+import { with_style } from './options_load.js';
+
 function handle_input(e) {
     $("#custom-style")[0].innerHTML = $("#config-area")[0].value;
     $("#save")[0].disabled = false;
@@ -45,6 +47,11 @@ function restore_options() {
     });
 }
 
+function take_effect() {
+    // If an instance is already running, make the changes take effect immediately.
+    chrome.runtime.sendMessage({ type: 'options update' }, result => { });
+}
+
 function save_options() {
     var customStyle = $("#custom-style")[0].innerHTML;
     
@@ -53,13 +60,14 @@ function save_options() {
         $("#remove")[0].disabled = false;
     });
 
-    // If an instance is already running, make the changes take effect immediately.
-    chrome.runtime.sendMessage({ type: 'options update' }, result => { });
+    take_effect();
 }
 
 function remove_storage() {
     chrome.storage.sync.remove('customStyle');
     $("#remove")[0].disabled = true;
+    take_effect();
+    location.reload()
 }
 
 $("#config-area").on('input', handle_input);

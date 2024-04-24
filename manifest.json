@@ -1,28 +1,49 @@
 {
   "name": "MoST Subtitles",
-  "version": "0.8.6",
+  "version": "0.9.0",
   "permissions": [
     "storage"
   ],
-  "browser_action": {
-      "default_title": "MoST Subtitles",
-      "default_icon": "icon16.png"
-  },
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "manifest_version": 2,
-  "background": { "scripts": ["options_load.js", "background.js"] },
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "service_worker.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
-      "matches": ["https://www.viki.com/*", "http://www.viki.com/*",
-            "https://subber.viki.com/*", "http://subber.viki.com/*"],
-      "js": ["zepto.js", "overlay.js"],
+      "matches": [
+        "https://www.viki.com/*",
+        "http://www.viki.com/*",
+        "https://subber.viki.com/*",
+        "http://subber.viki.com/*"
+      ],
+      "js": [
+        "zepto.js",
+        "overlay.js"
+      ],
       "run_at": "document_end"
     }
   ],
   "options_page": "options.html",
-  "web_accessible_resources": ["options_default.css"]
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "options_default.css",
+	"injected_code.js"
+      ],
+      "matches": [
+        "https://www.viki.com/*",
+        "http://www.viki.com/*",
+        "https://subber.viki.com/*",
+        "http://subber.viki.com/*"
+      ]
+    }
+  ],
+  "action": {},
+  "content_security_policy": {}
 }
