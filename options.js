@@ -36,14 +36,33 @@ function get_used_languages() {
     return result;
 }
 
+function restore_autopause(autopause, autoresume, autoresume_delay) {
+    $("#autopause")[0].checked = autopause;
+    $("#autoresume")[0].checked = autoresume;
+    $("#autoresume-delay")[0].value = autoresume_delay.toString();
+
+    update_autopause_interactivity();
+}
+
+function respond_autopause() {
+    $("#save")[0].disabled = false;
+    update_autopause_interactivity();
+}
+
+function update_autopause_interactivity() {
+    $("#autoresume")[0].disabled = !$("#autopause")[0].checked;
+    $("#autoresume-delay")[0].disabled = !$("#autoresume")[0].checked || !$("#autopause")[0].checked;
+}
+
 function restore_options() {
-    with_style(function(style, is_default) {
+    with_style(function(style, is_default, autopause, autoresume, autoresume_delay) {
         $("#custom-style")[0].innerHTML = style;
         $("#config-area")[0].innerHTML = style;
         if (is_default) {
             $("#remove")[0].disabled = true;
         }
         repopulate_subtitles();
+	restore_autopause(autopause, autoresume, autoresume_delay);
     });
 }
 
@@ -52,10 +71,22 @@ function take_effect() {
     chrome.runtime.sendMessage({ type: 'options update' }, result => { });
 }
 
+function is_nan(x) { return x != x; }
+
 function save_options() {
-    var customStyle = $("#custom-style")[0].innerHTML;
+    var options = {};
+    options.customStyle = $("#custom-style")[0].innerHTML;
     
-    chrome.storage.sync.set({customStyle: customStyle}, function() {
+    options.autopause = $("#autopause")[0].checked;
+    options.autoresume = $("#autoresume")[0].checked;
+    options.autoresume_delay = parseFloat($("#autoresume-delay")[0].value);
+    if (is_nan(options.autoresume_delay)) {
+	alert("invalid autoresume delay");
+	return;
+    }
+    //alert(JSON.stringify(options));
+    
+    chrome.storage.sync.set(options, function() {
         $("#save")[0].disabled = true;
         $("#remove")[0].disabled = false;
     });
@@ -65,6 +96,9 @@ function save_options() {
 
 function remove_storage() {
     chrome.storage.sync.remove('customStyle');
+    chrome.storage.sync.remove('autopause');
+    chrome.storage.sync.remove('autoresume');
+    chrome.storage.sync.remove('autoresume_delay');
     $("#remove")[0].disabled = true;
     take_effect();
     location.reload()
@@ -75,6 +109,9 @@ document.addEventListener('DOMContentLoaded', restore_options);
 $("#save")[0].addEventListener('click', save_options);
 $("#remove")[0].addEventListener('click', remove_storage);
 
+$("#autopause")[0].addEventListener('click', respond_autopause);
+$("#autoresume")[0].addEventListener('click', respond_autopause);
+$("#autoresume-delay")[0].addEventListener('click', respond_autopause);
 
 
 

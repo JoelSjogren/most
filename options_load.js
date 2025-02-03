@@ -21,10 +21,16 @@ let options_default = (
 
 export function with_style(callback) {  // callback(style, is_default);
     chrome.storage.sync.get(null, function(items) {
-        if (items.customStyle !== undefined) {
-            callback(items.customStyle, false);
-        } else {
-	    callback(options_default, true);
-	}
+	// things console.logged from here will appear in the service worker window
+	console.log(items);
+	var style = (items.customStyle !== undefined) ? items.customStyle : options_default;
+	var is_default = (items.customStyle !== undefined) ? false : true;
+	//alert("%" +items.autopause);
+	//alert("%" +items.autoresume);
+	//alert("%" +items.autoresume_delay);
+	var autopause = (items.autopause !== undefined) ? items.autopause : false;
+	var autoresume = (items.autoresume !== undefined) ? items.autoresume : true;
+	var autoresume_delay = (items.autoresume_delay !== undefined) ? items.autoresume_delay : 3;
+	callback(style, is_default, autopause, autoresume, autoresume_delay);
     });
 }

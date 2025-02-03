@@ -34,7 +34,7 @@ $(document).ready(function () {
         }
         addOverlay();
         setStyle(message.style);
-        addCueListeners(message.languages);
+        addCueListeners(message.languages, message.autopause_options);
     }
 
     chrome.runtime.onMessage.addListener(init);
@@ -56,12 +56,13 @@ function setStyle(style) {
     window.addEventListener("resize", updateVideoRectangle);
 }
 
-function addCueListeners(languages) {
+function addCueListeners(languages, autopause_options) {
     // Inject listeners (`injected_code.js`) into the webpage.
     var script = document.createElement('script');
     script.src = chrome.runtime.getURL('injected_code.js');
     script.onload = function() { this.remove(); };  // (Not sure what this does...)
-    script.dataset.params = JSON.stringify({languages: languages});
+    script.dataset.params = JSON.stringify({languages: languages, autopause_options: autopause_options});
+    //alert(JSON.stringify({languages: languages, autopause_options: autopause_options}));
     (document.head || document.documentElement).appendChild(script);
 }
 

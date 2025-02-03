@@ -9,11 +9,12 @@ chrome.action.onClicked.addListener(function(tab) {
 });
 
 function launch_overlay(tab, interactive) {
-    with_style_and_inferred_languages(function(style, languages) {
+    with_style_and_inferred_languages(function(style, languages, autopause_options) {
         chrome.tabs.sendMessage(tab.id, {
             style: style,
             languages: languages,
-	    interactive: interactive
+	    interactive: interactive,
+	    autopause_options: autopause_options,
         });
     });
 }
@@ -23,11 +24,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	console.log('will try to update');
 	tabs.forEach(tab => launch_overlay(tab, false));
     }
+    return true;
 });
 
 // Load options defined by user: css rules and active subtitle languages.
 function with_style_and_inferred_languages(callback) {
-    with_style(function(style) {
+    with_style(function(style, is_default, autopause, autoresume, autoresume_delay) {
 	// Infer the subtitle languages from the css rules.
 	// (This used to be done more properly but regex is sufficient really.)
 
@@ -41,7 +43,12 @@ function with_style_and_inferred_languages(callback) {
                 languages.push(lang);  // Store things like "en".
             }
         }
+
+	const autopause_options = {};
+	autopause_options.autopause = autopause;
+	autopause_options.autoresume = autoresume;
+	autopause_options.autoresume_delay = autoresume_delay;
 	
-        callback(style, languages);
+        callback(style, languages, autopause_options);
     });
 }

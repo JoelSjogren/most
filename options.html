@@ -27,6 +27,13 @@
 <div>
   <textarea id="config-area" rows="20" cols="60"></textarea>
   <br>
+  <input type="checkbox" id="autopause" name="autopause">
+  <label for="autopause">Automatically pause after each subtitle page</label>
+  <input type="checkbox" id="autoresume" name="autoresume">
+  <label for="autoresume">and resume after</label>
+  <input type="text" id="autoresume-delay" name="autoresume-delay" size="1">
+  <label for="autoresume-delay">seconds. (based on first language specified)</label>
+  <br>
   <button id="save" disabled="disabled">Save</button>
   <button id="remove">Reset</button>
 </div>

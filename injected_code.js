@@ -5,7 +5,11 @@ console.log("it is running");
 var most_dbg = {};
 
 var args = JSON.parse(document.currentScript.dataset.params);
-languages = args.languages;
+var languages = args.languages;
+console.log("args", args);
+var autopause = args.autopause_options.autopause;
+var autoresume = args.autopause_options.autoresume;
+var autoresume_delay = args.autopause_options.autoresume_delay;
 
 // Make Viki load the required languages; keep the references.
 var tracks_source = player.subtitleManager.videojs.tech_.textTracks_;
@@ -32,6 +36,14 @@ for (var i = 0; i < languages.length; i++) {
     }
 }
 
+var first = true;
+var blocked = false;
+var waiting = [];
+var is_seeking = false;
+
+player.on("seeking", function() { is_seeking = true; });
+player.on("seeked", function() { is_seeking = true; setTimeout(function(){ is_seeking = false; }, 500); });
+
 // Register cue listeners for each language.
 for (var i = 0; i < languages.length; i++) {
     // Html entry for subtitles in one language.
@@ -41,22 +53,67 @@ for (var i = 0; i < languages.length; i++) {
     
     // Cue listener.
     if (!(tracks[i] === undefined)) {
-        addCueListener(element, languages[i], tracks[i]);
+        addCueListener(element, languages[i], tracks[i], (first && autopause ? true : false));
+	first = false;
     }
     
-    function addCueListener(element, language, track) {
+    function addCueListener(element, language, track, autopause) {
         console.log("adding listener for: " + language);
+	if (autopause) console.log("(^ this first language will control autopause functionality)");
+	function simple_show(text) {
+	    element.innerHTML = text;
+	}
+	if (autopause) {
+	    var last = "";
+	    function show(text) {
+		var marks_end = !(last === "") && !is_seeking;
+		last = text;
+		function release() {
+		    blocked = false;
+		    simple_show(text);
+		    waiting.forEach(function(f) { f(); });
+		    waiting.length = 0;
+		}
+		if (marks_end) {
+		    blocked = true;
+		    player.player.pause();
+		    if (autoresume) {
+			setTimeout(function(){
+			    player.player.play();
+			    release();
+			}, autoresume_delay * 1000);
+		    } else {
+			function onplay() {
+			    release();
+			    player.off("play", onplay);
+			}
+			player.on("play", onplay);
+		    }
+		} else {
+		    simple_show(text);
+		}
+	    }
+	} else {
+	    function show(text) {
+		if (blocked) { waiting.push(function() { simple_show(text); }); }
+		else simple_show(text);
+	    }
+	}
         track.addEventListener('cuechange', function() {
-            //console.log("> cue change (" + language + ") <");
+            console.log("> cue change (" + language + ") < ... autopause? " + autopause);
             
             // Get the new subtitle page, or else an empty string.
-            var cue = "";
+	    cue = "";
             if (track.activeCues[0]) {
                 cue = track.activeCues[0].text;
             }
-            
-            // Show the new subtitle page.
-            element.innerHTML = cue;
+
+	    // Show the new subtitle page.
+	    show(cue);
         });
     }
+}
+
+function executeAutopause() {
+    
 }
