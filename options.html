@@ -13,38 +13,74 @@
     pointer-events: none;
     text-align: center;
 }
+
+.framed-div {
+border: 5px solid #3c9cd7;  /* Green border */
+padding: 20px;  /* Add space inside the frame */
+margin: 10px;  /* Add space outside the frame */
+background-color: #f9f9f9;  /* Light background color */
+}
+
+/*#wrapper {
+  display: flex;
+}
+
+#config-area {
+  flex: 0 0 50%;
+}
+
+#most-overlay {
+  flex: 1;
+}*/
 </style>
 <style id="custom-style"></style>
 <script src="zepto.js"></script>
 </head>
 <body>
-
-<div id="most-overlay">
-    <img id="video-player" src="sample.png"></img>
-    <!-- Subtitles go here. -->
-</div>
-
-<div>
-  <textarea id="config-area" rows="20" cols="60"></textarea>
-  <br>
-  <input type="checkbox" id="autopause" name="autopause">
-  <label for="autopause">Automatically pause after each subtitle page</label>
-  <input type="checkbox" id="autoresume" name="autoresume">
-  <label for="autoresume">and resume after</label>
-  <input type="text" id="autoresume-delay" name="autoresume-delay" size="1">
-  <label for="autoresume-delay">seconds. (based on first language specified)</label>
-  <br>
-  <button id="save" disabled="disabled">Save</button>
-  <button id="remove">Reset</button>
-</div>
-
-<div>
-  Check out the list of supported language codes here:
-  <a href="language-codes.txt" target="_blank">language-codes.txt</a>
-</div>
-
-<script src="options.js" type="module" charset="UTF-8"></script>
-
+  <h2><img src="icon16.png" width="32"/><font size="5"> Settings</h2></font>
+  <div>
+    <div id="wrapper" class="framed-div">
+      <div id="most-overlay">
+	<img id="video-player" src="sample.png"></img>
+	<!-- Subtitles go here. -->
+      </div>
+      <p><b>Configure languages and layout:</b><br>
+	<textarea id="config-area" rows="20" cols="60"></textarea>
+	<br> Check out the list of supported language codes here:
+	<a href="language-codes.txt" target="_blank">language-codes.txt</a>
+    </div>
+    <p>
+    <button id="save" disabled="disabled">Save</button>
+    <button id="remove">Reset</button>
+    <br>
+    <div class="framed-div">
+      <b>Extra options for language learners:</b><br>
+      <input type="checkbox" id="autopause" name="autopause">
+      <label for="autopause">Automatically pause after each subtitle page</label>
+      <input type="checkbox" id="autoresume" name="autoresume">
+      <label for="autoresume">and resume with a delay factor of</label>
+      <input type="text" id="autoresume-delay-factor" name="autoresume-delay-factor" size="1">
+      <label for="autoresume-delay">%</label>
+      <p><i>Japanese settings:</i>
+	<br>
+	<input type="checkbox" id="japanese-learner" name="japanese-learner">
+	<label for="japanese-learner">I am using this to study Japanese characters, so only pause for the ones that I don't know</label>
+	<input type="checkbox" id="japanese-highlight" name="japanese-highlight">
+	<label for="japanese-highlight">and please highlight those characters with a red color.</label>
+	<br>What symbols do already you know well?
+      <select id="user_level" name="user_level">
+	<option value="beginner">Nothing</option>
+	<option value="novice">Hiragana/Katakana/Punctuation</option>
+	<option value="n5">N5 Kanji</option>
+	<option value="n4">N4 Kanji</option>
+      </select>
+      and additionally the following list:
+      <input type="text" id="user_kanji" name="user_kanji" size="20">
+    </div>
+  </div>
+  
+  <script src="options.js" type="module" charset="UTF-8"></script>
+  
 </body>
 </html>
 

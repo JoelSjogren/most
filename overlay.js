@@ -27,14 +27,16 @@
 
 $(document).ready(function () {
     
-    function init(message, sender, callback) {
+    function init({style, languages, interactive, autopause_config}, sender, callback) {
         $('#most-overlay').remove();  // hacky cleanup of possible old instances
-        if (message.interactive) {
+        if (interactive) {
             alert("Hint: Use F11 instead of the fullscreen button to keep dual subtitles in that mode.");
-        }
+        } else {
+	    location.reload();  // TODO support reloading the extension without reloading the page. broken due to const.
+	}
         addOverlay();
-        setStyle(message.style);
-        addCueListeners(message.languages, message.autopause_options);
+        setStyle(style);
+        addCueListeners(languages, autopause_config);
     }
 
     chrome.runtime.onMessage.addListener(init);
@@ -56,12 +58,12 @@ function setStyle(style) {
     window.addEventListener("resize", updateVideoRectangle);
 }
 
-function addCueListeners(languages, autopause_options) {
+function addCueListeners(languages, autopause_config) {
     // Inject listeners (`injected_code.js`) into the webpage.
     var script = document.createElement('script');
     script.src = chrome.runtime.getURL('injected_code.js');
     script.onload = function() { this.remove(); };  // (Not sure what this does...)
-    script.dataset.params = JSON.stringify({languages: languages, autopause_options: autopause_options});
+    script.dataset.params = JSON.stringify({languages, autopause_config});
     //alert(JSON.stringify({languages: languages, autopause_options: autopause_options}));
     (document.head || document.documentElement).appendChild(script);
 }

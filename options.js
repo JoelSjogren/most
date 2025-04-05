@@ -36,10 +36,14 @@ function get_used_languages() {
     return result;
 }
 
-function restore_autopause(autopause, autoresume, autoresume_delay) {
-    $("#autopause")[0].checked = autopause;
-    $("#autoresume")[0].checked = autoresume;
-    $("#autoresume-delay")[0].value = autoresume_delay.toString();
+function restore_autopause(config) {
+    $("#autopause")[0].checked = config.autopause;
+    $("#autoresume")[0].checked = config.autoresume;
+    $("#autoresume-delay-factor")[0].value = config.autoresume_delay_factor.toString();
+    $("#japanese-learner")[0].checked = config.japanese_learner;
+    $("#japanese-highlight")[0].checked = config.japanese_highlight;
+    $("#user_level")[0].value = config.user_level;
+    $("#user_kanji")[0].value = config.user_kanji;
 
     update_autopause_interactivity();
 }
@@ -50,19 +54,29 @@ function respond_autopause() {
 }
 
 function update_autopause_interactivity() {
-    $("#autoresume")[0].disabled = !$("#autopause")[0].checked;
-    $("#autoresume-delay")[0].disabled = !$("#autoresume")[0].checked || !$("#autopause")[0].checked;
+    const ap = $("#autopause")[0].checked;
+    $("#autoresume")[0].disabled = !ap;
+    $("#autoresume-delay-factor")[0].disabled = !$("#autoresume")[0].checked || !ap;
+
+    const css = $("#config-area")[0].value;
+    const jl = $("#japanese-learner")[0];
+    const jh = $("#japanese-highlight")[0];
+    const ul = $("#user_level")[0];
+    const uk = $("#user_kanji")[0];
+    jl.disabled = jh.disabled = ul.disabled = uk.disabled = false;
+    //if (!css.includes(".most-ja") || !ap) jl.disabled = jh.disabled = ul.disabled = uk.disabled = true;
+    if (!$("#japanese-learner")[0].checked) jh.disabled = ul.disabled = uk.disabled = true;
 }
 
 function restore_options() {
-    with_style(function(style, is_default, autopause, autoresume, autoresume_delay) {
+    with_style(function(style, is_default, autopause_config) {
         $("#custom-style")[0].innerHTML = style;
         $("#config-area")[0].innerHTML = style;
         if (is_default) {
             $("#remove")[0].disabled = true;
         }
         repopulate_subtitles();
-	restore_autopause(autopause, autoresume, autoresume_delay);
+	restore_autopause(autopause_config);
     });
 }
 
@@ -79,11 +93,17 @@ function save_options() {
     
     options.autopause = $("#autopause")[0].checked;
     options.autoresume = $("#autoresume")[0].checked;
-    options.autoresume_delay = parseFloat($("#autoresume-delay")[0].value);
+    options.autoresume_delay_factor = parseFloat($("#autoresume-delay-factor")[0].value);
     if (is_nan(options.autoresume_delay)) {
-	alert("invalid autoresume delay");
+	alert("invalid autoresume delay factor");
 	return;
     }
+
+    options.japanese_learner = $("#japanese-learner")[0].checked;
+    console.log("saving highlight", $("#japanese-highlight")[0].checked);
+    options.japanese_highlight = $("#japanese-highlight")[0].checked;
+    options.user_level = $("#user_level")[0].value;
+    options.user_kanji = $("#user_kanji")[0].value;
     //alert(JSON.stringify(options));
     
     chrome.storage.sync.set(options, function() {
@@ -98,7 +118,11 @@ function remove_storage() {
     chrome.storage.sync.remove('customStyle');
     chrome.storage.sync.remove('autopause');
     chrome.storage.sync.remove('autoresume');
-    chrome.storage.sync.remove('autoresume_delay');
+    chrome.storage.sync.remove('autoresume_delay_factor');
+    chrome.storage.sync.remove('japanese_learner');
+    chrome.storage.sync.remove('japanese_highlight');
+    chrome.storage.sync.remove('user_level');
+    chrome.storage.sync.remove('user_kanji');
     $("#remove")[0].disabled = true;
     take_effect();
     location.reload()
@@ -111,10 +135,11 @@ $("#remove")[0].addEventListener('click', remove_storage);
 
 $("#autopause")[0].addEventListener('click', respond_autopause);
 $("#autoresume")[0].addEventListener('click', respond_autopause);
-$("#autoresume-delay")[0].addEventListener('click', respond_autopause);
-
-
-
+$("#autoresume-delay-factor")[0].addEventListener('click', respond_autopause);
+$("#japanese-learner")[0].addEventListener('click', respond_autopause);
+$("#japanese-highlight")[0].addEventListener('click', respond_autopause);
+$("#user_level")[0].addEventListener('click', respond_autopause);
+$("#user_kanji")[0].addEventListener('click', respond_autopause);
 
 
 var samples = {
