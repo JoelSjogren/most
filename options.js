@@ -58,13 +58,13 @@ function update_autopause_interactivity() {
     $("#autoresume")[0].disabled = !ap;
     $("#autoresume-delay-factor")[0].disabled = !$("#autoresume")[0].checked || !ap;
 
-    const css = $("#config-area")[0].value;
+    const css = $("#config-area")[0].innerHTML;
     const jl = $("#japanese-learner")[0];
     const jh = $("#japanese-highlight")[0];
     const ul = $("#user_level")[0];
     const uk = $("#user_kanji")[0];
     jl.disabled = jh.disabled = ul.disabled = uk.disabled = false;
-    //if (!css.includes(".most-ja") || !ap) jl.disabled = jh.disabled = ul.disabled = uk.disabled = true;
+    if (!ap) jl.disabled = jh.disabled = ul.disabled = uk.disabled = true;
     if (!$("#japanese-learner")[0].checked) jh.disabled = ul.disabled = uk.disabled = true;
 }
 

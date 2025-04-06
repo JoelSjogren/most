@@ -1,6 +1,4 @@
 // This file runs directly on the webpage, rather than isolated within the extension.
-console.log("it is running");
-const most_dbg = {};
 
 const SkipLevel = {
     BEGINNER: 0,
@@ -27,12 +25,21 @@ class KanjiDetector {
     easy(val) { return this.punctuation(val) || this.hiragana(val) || this.katakana(val); }
     japanese(val) { return this.easy(val)  || this.kanji(val); }
     user_learned(c) { return this.user_kanji.includes(c); }
+    user_knows(query_level) {
+	let user_level = this.user_level;
+	if (user_level === "beginner") user_level = SkipLevel.BEGINNER;
+	if (user_level === "novice") user_level = SkipLevel.NOVICE;
+	if (user_level === "n5") user_level = SkipLevel.N5;
+	if (user_level === "n4") user_level = SkipLevel.N4;
+	if (user_level === "expert") user_level = SkipLevel.EXPERT;
+	return user_level >= query_level;
+    }
     user_unknown_character(c) {
 	const val = c.charCodeAt(0);
 	if (this.user_learned(c) || !this.japanese(val)) return false;
-	if (this.user_level >= SkipLevel.NOVICE && this.easy(val)) return false;
-	if (this.user_level >= SkipLevel.N5 && N5_kanji.includes(c)) return false;
-	if (this.user_level >= SkipLevel.N4 && N4_kanji.includes(c)) return false;
+	if (this.user_knows(SkipLevel.NOVICE) && this.easy(val)) return false;
+	if (this.user_knows(SkipLevel.N5) && N5_kanji.includes(c)) return false;
+	if (this.user_knows(SkipLevel.N4) && N4_kanji.includes(c)) return false;
 	return true;
     }
     red(c) { return `<span style="color: red;">${c}</span>` }
@@ -66,16 +73,20 @@ class PauseCoordinator {
 	}, this.race_time);
     }
     pause(pause_time) {
+	if (pause_time == 0) return;
 	this.player.player.pause();
 	this.paused = true;
 	if (pause_time == Infinity) return;
-	setTimeout(() => this.resume(), pause_time);
+	setTimeout(() => { this.resume(); }, pause_time);
     }
     resume() {
+	this.player.player.play()
+	this.resume_logic();
+    }
+    resume_logic() {
 	this.paused = false;
 	this.queue.forEach((f) => f());
 	this.queue = [];
-	this.player.player.play();
     }
 }
 
@@ -93,39 +104,50 @@ class SubtitleDisplayer {
 	    this.kanji_detector = undefined;
 	}
 	this.autoresume = autoresume;
+	this.autoresume_delay_factor = autoresume_delay_factor;
 	this.japanese_highlight = japanese_highlight;
 	this.coordinator = coordinator;
+	this.pause_time = 0;
+
+	this.element = document.createElement("div");
+	this.element.className = "most-subtitles most-" + this.language;
+	document.getElementById("most-overlay").appendChild(this.element);
+    }
+    register_for_events() {
+	// necessary in order to actually receive the events. known modes: disabled, hidden, showing
+	if (this.track.mode === 'disabled') this.track.mode = 'hidden';
+	this.track.addEventListener("cuechange", () => this.handle_cue_change());
     }
     handle_cue_change() {
-	console.log("incoming event");
 	// Analyze the incoming cue change event.
 	let text = "";
 	const cue = this.track.activeCues[0];
 	if (cue !== undefined) {
 	    text = cue.text;
 	    if (this.kanji_detector !== undefined) {
-		const [any, highlighted] = detector.user_unknown_string(text);
+		var [any, highlighted] = this.kanji_detector.user_unknown_string(text);
 		if (this.japanese_highlight) text = highlighted;
 	    } else {
-		const any = this.autopause && (text.length != 0);
+		var any = this.autopause && (text.length != 0);
 	    }
-        } else {
-	    const any = false;
-	}
+        }
 	console.log("cue change", this.language, text);
 
 	// Display the new subtitles, but pause the video first if appropriate.
-	if (this.pause_time !== undefined) coordinator.pause(this.pause_time);
+	coordinator.pause(this.pause_time);
 	coordinator.submit_action(() => this.element.innerHTML = text);
 
 	// Prepare for the next incoming event.
-	if (any) this.pause_time = this.calculate_pause_time(cue);
+	this.pause_time = any ? this.calculate_pause_time(cue) : 0;
+	
     }
     calculate_pause_time(cue) {
 	const percent = 1/100;
 	const factor = this.autoresume_delay_factor * percent;
 	const duration = cue.endTime - cue.startTime;
-	return this.autoresume ? factor * duration : Infinity;
+	const s = 1000;  // ms
+	console.log("preparing to pause for", this.pause_time, "due to language", this.language);
+	return this.autoresume ? factor * duration * s : Infinity;
     }
     static load_required_languages(player, languages, autopause_config, coordinator) {
 	const tracks = player.subtitleManager.videojs.tech_.textTracks_;
@@ -142,34 +164,37 @@ class SubtitleDisplayer {
 	}
 	player.subtitleManager.cleanup();
 	player.subtitleManager.setLanguage(old_language);
-	// Without this configuration the listeners wouldn't get notified.
-	for (let i = 0; i < languages.length; i++) {
-	    if (displayers[i] !== undefined && displayers[i].track.mode === 'disabled') {
-		console.log("setting mode to hidden");
-		displayers[i].track.mode = 'hidden';  // known modes: disabled, hidden, showing
-	    }
-	}
-	
+
+	displayers.forEach((displayer) => displayer.register_for_events());
+	/*
 	displayers.forEach((displayer) => {
+	    // known modes: disabled, hidden, showing
+	    if (displayer.track.mode === 'disabled') displayer.track.mode = 'hidden';
 	    displayer.element = document.createElement("div");
 	    displayer.element.className = "most-subtitles most-" + displayer.language;
 	    document.getElementById("most-overlay").appendChild(displayer.element);
 	    displayer.track.addEventListener("cuechange", () => displayer.handle_cue_change());
 	    console.log("created displayer for language", displayer.language);
 	});
+	*/
+	
 	return displayers;
     }
 }
 
 const {languages, autopause_config} = JSON.parse(document.currentScript.dataset.params);
+if (!languages.includes("ja")) autopause_config.japanese_learner = false;
 console.log("args", {languages, autopause_config});
 
 const coordinator = new PauseCoordinator(player, {race_time: 100});
 const displayers = SubtitleDisplayer.load_required_languages(player, languages, autopause_config, coordinator);
 
 function reset() {
-    coordinator.resume();
-    displayers.forEach((displayer) => displayer.pause_time = undefined);
+    coordinator.resume_logic();
+    displayers.forEach((displayer) => displayer.pause_time = 0);
 }
 player.on("seeking", reset);
 player.on("seeked", reset);
+
+most_dbg = {coordinator, displayers};
+console.log(most_dbg)
