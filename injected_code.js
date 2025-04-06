@@ -1,8 +1,6 @@
 // This file runs directly on the webpage, rather than isolated within the extension.
 console.log("it is running");
-var most_dbg = {};
-
-/* BEGINNING OF AUTO-PAUSE FUNCTIONALITY */
+const most_dbg = {};
 
 const SkipLevel = {
     BEGINNER: 0,
@@ -15,6 +13,7 @@ const SkipLevel = {
 const N4_kanji = "夕干丸工不元公切引太心文方止牛犬区内王毛世主仕代以兄写冬去古台広正用田目立合会回同地池多字安好早有死考肉自色寺米光住体作別医図売弟町社私究花言赤走足近声事京使味夜妹姉始店明服歩注物画的知空者英青所使品室屋度建待思急持映春昼洋海界発研秋茶計送重音風草首県星映乗洗借勉員夏家帰料旅特病真紙起通院弱動問堂強悪教族理終習転週野魚鳥黒都船雪進動場朝着答買貸運道開集飯飲寒軽絵短暑意新業楽漢試暗遠働歌銀質親館薬頭曜題験顔";  // by iva - v1.0, 20250215 - MIT license
 const N5_kanji = "一二八九力七十人入三口上下千万女子小大山川土五六中日月午今分天木水火友父犬少手円四白目田母古出北半左右石生立外本耳休先名多会安年毎気百行西社村花来言見男足車何林学金長空店東雨国前南後食校時高書魚週森飲道買間新話電聞語読駅";  // by iva - v1.0, 20250215 - MIT license
 
+// TODO figure out how to allow reloading this file - not possible since classes etc have already been defined
 class KanjiDetector {
     constructor({user_level, user_kanji}) {
 	this.user_level = user_level;
@@ -27,10 +26,10 @@ class KanjiDetector {
     kanji(val) { return this.ordered(0x4e00, val, 0x9faf); }
     easy(val) { return this.punctuation(val) || this.hiragana(val) || this.katakana(val); }
     japanese(val) { return this.easy(val)  || this.kanji(val); }
-    user_learned(val) { return this.user_kanji.includes(val); }
+    user_learned(c) { return this.user_kanji.includes(c); }
     user_unknown_character(c) {
 	const val = c.charCodeAt(0);
-	if (this.user_learned(val) || !this.japanese(val)) return false;
+	if (this.user_learned(c) || !this.japanese(val)) return false;
 	if (this.user_level >= SkipLevel.NOVICE && this.easy(val)) return false;
 	if (this.user_level >= SkipLevel.N5 && N5_kanji.includes(c)) return false;
 	if (this.user_level >= SkipLevel.N4 && N4_kanji.includes(c)) return false;
@@ -54,10 +53,11 @@ class KanjiDetector {
 };
 
 class PauseCoordinator {
-    constructor({race_time}) {
+    constructor(player, {race_time}) {
+	this.player = player;
 	this.race_time = race_time;
-	this.queue = [];
 	this.paused = false;
+	this.queue = [];
     }
     submit_action(f) {
 	setTimeout(() => {
@@ -66,148 +66,110 @@ class PauseCoordinator {
 	}, this.race_time);
     }
     pause(pause_time) {
+	this.player.player.pause();
 	this.paused = true;
-	setTimeout(() => {
-	    this.queue.forEach((f) => f());
-	    this.queue = [];
-	    this.paused = false;
-	}, pause_time);
+	if (pause_time == Infinity) return;
+	setTimeout(() => this.resume(), pause_time);
+    }
+    resume() {
+	this.paused = false;
+	this.queue.forEach((f) => f());
+	this.queue = [];
+	this.player.player.play();
     }
 }
 
-function wait_until(cond, then) {
-    // console.log("waiting");
-    if (cond()) then();
-    else setTimeout(() => wait_until(cond, then), 100);
-}
-
-/* END OF AUTO-PAUSE FUNCTIONALITY */
-
-var {languages, autopause_config} = JSON.parse(document.currentScript.dataset.params);
-console.log("args", {languages, autopause_config});
-var {autopause, autoresume, autoresume_delay_factor,
-     japanese_learner, japanese_highlight, user_level, user_kanji} = args.autopause_options.autopause;
-//var detector = new KanjiDetector({user_level: SkipLevel.NOVICE, user_kanji: ""});
-//var coordinator = new PauseCoordinator({race_time: 100, pause_time: 3000});
-var detector = new KanjiDetector({user_level, user_kanji});
-var coordinator = new PauseCoordinator({race_time: 100, pause_time: 3000});
-
-// Make Viki load the required languages; keep the references.
-var tracks_source = player.subtitleManager.videojs.tech_.textTracks_;
-var tracks = most_dbg.tracks = {};
-var old_language = player.getCurrentSubtitle();
-for (var i = 0; i < languages.length; i++) {
-    player.subtitleManager.cleanup();
-    player.subtitleManager.setLanguage(languages[i]);
-    if (tracks_source.length == 1
-	&& tracks_source[0] !== undefined
-	&& tracks_source[0].language == languages[i]) {
-	tracks[i] = tracks_source[0];
-    } else {
-	alert('subtitles are unavailable for language ' + languages[i]);
-    }
-}
-player.subtitleManager.cleanup();
-player.subtitleManager.setLanguage(old_language);
-
-// Without this configuration the listeners wouldn't get notified.
-for (var i = 0; i < languages.length; i++) {
-    if (!(tracks[i] === undefined) && (tracks[i].mode === 'disabled')) {
-        tracks[i].mode = 'hidden';  // known modes: disabled, hidden, showing
-    }
-}
-
-//var is_seeking = false;
-//player.on("seeking", function() { is_seeking = true; });
-player.on("seeked", function() { coordinator.queue = []; );
-
-// Register cue listeners for each language.
-for (var i = 0; i < languages.length; i++) {
-    // Html entry for subtitles in one language.
-    var element = document.createElement("div");
-    element.className = "most-subtitles most-" + languages[i];
-    document.getElementById("most-overlay").appendChild(element);
-    
-    // Cue listener.
-    if (!(tracks[i] === undefined)) {
-        addCueListener(element, languages[i], tracks[i], (first && autopause ? true : false));
-    }
-
-    function addCueListener(element, language, track) {
-        console.log("adding listener for: " + language);
-        track.addEventListener('cuechange', function() {
-            //console.log("> cue change (" + language + ") <");
-            
-            // Get the new subtitle page, or else an empty string.
-            var cue = "";
-            if (track.activeCues[0]) {
-                cue = track.activeCues[0].text;
-            }
-            
-            // Show the new subtitle page.
-            element.innerHTML = cue;
-        });
-    }
-    
-    function addCueListenerOBSOLETE(element, language, track, autopause) {
-        console.log("adding listener for: " + language);
-	if (autopause) console.log("(^ this first language will control autopause functionality)");
-	function simple_show(text) {
-	    element.innerHTML = text;
-	}
-	if (autopause) {
-	    var last = "";
-	    function show(text) {
-		var marks_end = !(last === "") && !is_seeking;
-		last = text;
-		function release() {
-		    blocked = false;
-		    simple_show(text);
-		    waiting.forEach(function(f) { f(); });
-		    waiting.length = 0;
-		}
-		if (marks_end) {
-		    blocked = true;
-		    player.player.pause();
-		    if (autoresume) {
-			setTimeout(function(){
-			    player.player.play();
-			    release();
-			}, autoresume_delay * 1000);
-		    } else {
-			function onplay() {
-			    release();
-			    player.off("play", onplay);
-			}
-			player.on("play", onplay);
-		    }
-		} else {
-		    simple_show(text);
-		}
-	    }
+class SubtitleDisplayer {
+    constructor(language, track, autopause_config, coordinator) {
+	this.language = language;
+	this.track = track;
+	const {autopause, autoresume, autoresume_delay_factor,
+	       japanese_learner, japanese_highlight, user_level, user_kanji} = autopause_config;
+	this.autopause = autopause && !japanese_learner;
+	if (autopause && japanese_learner && language == "ja") {
+	    this.kanji_detector = new KanjiDetector({user_level, user_kanji});
+	    this.autopause = true;  // this will then be the only displayer which has "autopause = true"
 	} else {
-	    function show(text) {
-		if (blocked) { waiting.push(function() { simple_show(text); }); }
-		else simple_show(text);
+	    this.kanji_detector = undefined;
+	}
+	this.autoresume = autoresume;
+	this.japanese_highlight = japanese_highlight;
+	this.coordinator = coordinator;
+    }
+    handle_cue_change() {
+	console.log("incoming event");
+	// Analyze the incoming cue change event.
+	let text = "";
+	const cue = this.track.activeCues[0];
+	if (cue !== undefined) {
+	    text = cue.text;
+	    if (this.kanji_detector !== undefined) {
+		const [any, highlighted] = detector.user_unknown_string(text);
+		if (this.japanese_highlight) text = highlighted;
+	    } else {
+		const any = this.autopause && (text.length != 0);
+	    }
+        } else {
+	    const any = false;
+	}
+	console.log("cue change", this.language, text);
+
+	// Display the new subtitles, but pause the video first if appropriate.
+	if (this.pause_time !== undefined) coordinator.pause(this.pause_time);
+	coordinator.submit_action(() => this.element.innerHTML = text);
+
+	// Prepare for the next incoming event.
+	if (any) this.pause_time = this.calculate_pause_time(cue);
+    }
+    calculate_pause_time(cue) {
+	const percent = 1/100;
+	const factor = this.autoresume_delay_factor * percent;
+	const duration = cue.endTime - cue.startTime;
+	return this.autoresume ? factor * duration : Infinity;
+    }
+    static load_required_languages(player, languages, autopause_config, coordinator) {
+	const tracks = player.subtitleManager.videojs.tech_.textTracks_;
+	const displayers = [];
+	const old_language = player.getCurrentSubtitle();
+	for (let i = 0; i < languages.length; i++) {
+	    player.subtitleManager.cleanup();
+	    player.subtitleManager.setLanguage(languages[i]);
+	    if (tracks.length == 1 && tracks[0] !== undefined && tracks[0].language == languages[i]) {
+		displayers[i] = new SubtitleDisplayer(languages[i], tracks[0], autopause_config, coordinator);
+	    } else {
+		alert('subtitles are unavailable for language ' + languages[i]);
 	    }
 	}
-        track.addEventListener('cuechange', function() {
-            console.log("> cue change (" + language + ") < ... autopause? " + autopause);
-            
-            // Get the new subtitle page, or else an empty string.
-	    cue = "";
-            if (track.activeCues[0]) {
-                cue = track.activeCues[0].text;
-		//cue = cue + `<span style="color: red;">foo</span>`;
-		if (language == "ja") {
-		    let [any, highlighted] = detector.user_unknown_string(cue);
-		    console.log(any, highlighted);
-		    cue = highlighted;
-		}
-            }
-
-	    // Show the new subtitle page.
-	    show(cue);
-        });
+	player.subtitleManager.cleanup();
+	player.subtitleManager.setLanguage(old_language);
+	// Without this configuration the listeners wouldn't get notified.
+	for (let i = 0; i < languages.length; i++) {
+	    if (displayers[i] !== undefined && displayers[i].track.mode === 'disabled') {
+		console.log("setting mode to hidden");
+		displayers[i].track.mode = 'hidden';  // known modes: disabled, hidden, showing
+	    }
+	}
+	
+	displayers.forEach((displayer) => {
+	    displayer.element = document.createElement("div");
+	    displayer.element.className = "most-subtitles most-" + displayer.language;
+	    document.getElementById("most-overlay").appendChild(displayer.element);
+	    displayer.track.addEventListener("cuechange", () => displayer.handle_cue_change());
+	    console.log("created displayer for language", displayer.language);
+	});
+	return displayers;
     }
 }
+
+const {languages, autopause_config} = JSON.parse(document.currentScript.dataset.params);
+console.log("args", {languages, autopause_config});
+
+const coordinator = new PauseCoordinator(player, {race_time: 100});
+const displayers = SubtitleDisplayer.load_required_languages(player, languages, autopause_config, coordinator);
+
+function reset() {
+    coordinator.resume();
+    displayers.forEach((displayer) => displayer.pause_time = undefined);
+}
+player.on("seeking", reset);
+player.on("seeked", reset);
