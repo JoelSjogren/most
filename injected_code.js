@@ -166,18 +166,6 @@ class SubtitleDisplayer {
 	player.subtitleManager.setLanguage(old_language);
 
 	displayers.forEach((displayer) => displayer.register_for_events());
-	/*
-	displayers.forEach((displayer) => {
-	    // known modes: disabled, hidden, showing
-	    if (displayer.track.mode === 'disabled') displayer.track.mode = 'hidden';
-	    displayer.element = document.createElement("div");
-	    displayer.element.className = "most-subtitles most-" + displayer.language;
-	    document.getElementById("most-overlay").appendChild(displayer.element);
-	    displayer.track.addEventListener("cuechange", () => displayer.handle_cue_change());
-	    console.log("created displayer for language", displayer.language);
-	});
-	*/
-	
 	return displayers;
     }
 }
