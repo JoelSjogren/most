@@ -174,6 +174,7 @@ const {languages, autopause_config} = JSON.parse(document.currentScript.dataset.
 if (!languages.includes("ja")) autopause_config.japanese_learner = false;
 console.log("args", {languages, autopause_config});
 
+const player = document.querySelector('.video-js').player.ima.controller.adUi.vmplayer;
 const coordinator = new PauseCoordinator(player, {race_time: 100});
 const displayers = SubtitleDisplayer.load_required_languages(player, languages, autopause_config, coordinator);
 
