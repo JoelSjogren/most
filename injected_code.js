@@ -170,11 +170,49 @@ class SubtitleDisplayer {
     }
 }
 
+function FindPlayer(root = document.body) {  // courtesy of chatgpt
+  function getFiberFromDom(dom) {
+    const key = Object.getOwnPropertyNames(dom).find(k =>
+      k.startsWith("__reactFiber")
+    );
+    return key ? dom[key] : null;
+  }
+
+  function findFiberWithSubtitleManager(fiber) {
+    if (!fiber) return null;
+    const sn = fiber.stateNode;
+    if (sn && sn.player && sn.player.subtitleManager) {
+      return sn.player;
+    }
+    const fromChild = findFiberWithSubtitleManager(fiber.child);
+    if (fromChild) return fromChild;
+    return findFiberWithSubtitleManager(fiber.sibling);
+  }
+
+  function traverseDOM(node) {
+    if (!node) return null;
+    const fiber = getFiberFromDom(node);
+    if (fiber) {
+      const player = findFiberWithSubtitleManager(fiber);
+      if (player) return player;
+    }
+    let child = node.firstChild;
+    while (child) {
+      const result = traverseDOM(child);
+      if (result) return result;
+      child = child.nextSibling;
+    }
+    return null;
+  }
+
+  return traverseDOM(root);
+}
+
 const {languages, autopause_config} = JSON.parse(document.currentScript.dataset.params);
 if (!languages.includes("ja")) autopause_config.japanese_learner = false;
 console.log("args", {languages, autopause_config});
 
-const player = document.querySelector('.video-js').player.ima.controller.adUi.vmplayer;
+const player = FindPlayer();
 const coordinator = new PauseCoordinator(player, {race_time: 100});
 const displayers = SubtitleDisplayer.load_required_languages(player, languages, autopause_config, coordinator);
 
