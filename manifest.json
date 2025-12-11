@@ -1,13 +1,13 @@
 {
   "name": "MoST Subtitles",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "permissions": [
     "storage"
   ],
   "icons": {
     "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "48": "newicon48.png",
+    "128": "newicon128.png"
   },
   "manifest_version": 3,
   "background": {
