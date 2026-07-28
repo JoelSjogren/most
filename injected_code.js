@@ -1,5 +1,13 @@
 // This file runs directly on the webpage, rather than isolated within the extension.
 
+// Wrapped in an IIFE so this file can be re-injected (e.g. after moving to the next
+// episode) without "Identifier has already been declared" errors from the page's
+// shared global scope.
+(function () {
+
+// Tear down listeners left over from a previous injection into this same page.
+if (window.__most_cleanup__) window.__most_cleanup__();
+
 const SkipLevel = {
     BEGINNER: 0,
     NOVICE: 1,
@@ -11,7 +19,6 @@ const SkipLevel = {
 const N4_kanji = "夕干丸工不元公切引太心文方止牛犬区内王毛世主仕代以兄写冬去古台広正用田目立合会回同地池多字安好早有死考肉自色寺米光住体作別医図売弟町社私究花言赤走足近声事京使味夜妹姉始店明服歩注物画的知空者英青所使品室屋度建待思急持映春昼洋海界発研秋茶計送重音風草首県星映乗洗借勉員夏家帰料旅特病真紙起通院弱動問堂強悪教族理終習転週野魚鳥黒都船雪進動場朝着答買貸運道開集飯飲寒軽絵短暑意新業楽漢試暗遠働歌銀質親館薬頭曜題験顔";  // by iva - v1.0, 20250215 - MIT license
 const N5_kanji = "一二八九力七十人入三口上下千万女子小大山川土五六中日月午今分天木水火友父犬少手円四白目田母古出北半左右石生立外本耳休先名多会安年毎気百行西社村花来言見男足車何林学金長空店東雨国前南後食校時高書魚週森飲道買間新話電聞語読駅";  // by iva - v1.0, 20250215 - MIT license
 
-// TODO figure out how to allow reloading this file - not possible since classes etc have already been defined
 class KanjiDetector {
     constructor({user_level, user_kanji}) {
 	this.user_level = user_level;
@@ -116,7 +123,11 @@ class SubtitleDisplayer {
     register_for_events() {
 	// necessary in order to actually receive the events. known modes: disabled, hidden, showing
 	if (this.track.mode === 'disabled') this.track.mode = 'hidden';
-	this.track.addEventListener("cuechange", () => this.handle_cue_change());
+	this._cue_change_listener = () => this.handle_cue_change();
+	this.track.addEventListener("cuechange", this._cue_change_listener);
+    }
+    dispose() {
+	this.track.removeEventListener("cuechange", this._cue_change_listener);
     }
     handle_cue_change() {
 	// Analyze the incoming cue change event.
@@ -216,12 +227,23 @@ const player = FindPlayer();
 const coordinator = new PauseCoordinator(player, {race_time: 100});
 const displayers = SubtitleDisplayer.load_required_languages(player, languages, autopause_config, coordinator);
 
+// player doesn't expose an "off" method, so a stale "seeking"/"seeked" listener from a
+// previous injection can't be unregistered - make it a no-op instead once superseded.
+let superseded = false;
 function reset() {
+    if (superseded) return;
     coordinator.resume_logic();
     displayers.forEach((displayer) => displayer.pause_time = 0);
 }
 player.on("seeking", reset);
 player.on("seeked", reset);
 
+window.__most_cleanup__ = function () {
+    superseded = true;
+    displayers.forEach((displayer) => displayer.dispose());
+};
+
 most_dbg = {coordinator, displayers};
 console.log(most_dbg)
+
+})();

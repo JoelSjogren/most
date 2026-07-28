@@ -32,7 +32,7 @@ $(document).ready(function () {
         if (interactive) {
             alert("Hint: Use F11 instead of the fullscreen button to keep dual subtitles in that mode.");
         } else {
-	    location.reload();  // TODO support reloading the extension without reloading the page. broken due to const.
+	    location.reload();
 	}
         addOverlay();
         setStyle(style);
